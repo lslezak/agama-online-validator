@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
+const path = require("path");
 const { merge } = require("webpack-merge");
 const common = require("./webpack.common.js");
 const { stylePaths } = require("./stylePaths");
@@ -30,7 +31,7 @@ module.exports = merge(common("production"), {
     rules: [
       {
         test: /\.css$/,
-        include: [...stylePaths],
+        include: [...stylePaths, path.resolve(__dirname, "./node_modules/monaco-editor")],
         use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
     ],

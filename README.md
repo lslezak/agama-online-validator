@@ -17,8 +17,8 @@ archive](https://lslezak.github.io/agama-online-validator/agama-validator.zip)
 with the validator. The offline validator runs completely locally and does not
 need internet connection at all.
 
-Just unpack the `agama-validator.zip` archive and open the
-`agama-validator/index.html` file in your browser.
+<!-- Just unpack the `agama-validator.zip` archive and open the
+`agama-validator/index.html` file in your browser. -->
 
 ## Defined scripts
 

@@ -26,7 +26,7 @@ module.exports = merge(common("development"), {
     rules: [
       {
         test: /\.css$/,
-        include: [...stylePaths],
+        include: [...stylePaths, path.resolve(__dirname, "./node_modules/monaco-editor")],
         use: ["style-loader", "css-loader"],
       },
     ],

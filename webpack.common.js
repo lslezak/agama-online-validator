@@ -4,9 +4,10 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
 const BG_IMAGES_DIRNAME = "bgimages";
-const ASSET_PATH = process.env.ASSET_PATH || "./";
+const ASSET_PATH = process.env.ASSET_PATH || "/";
 module.exports = (env) => {
   return {
     module: {
@@ -121,6 +122,7 @@ module.exports = (env) => {
       new CopyPlugin({
         patterns: [{ from: "./src/favicon.ico", to: "images" }],
       }),
+      new MonacoWebpackPlugin({ languages: ["json"] }),
     ],
     resolve: {
       extensions: [".js", ".ts", ".tsx", ".jsx"],

@@ -1,8 +1,8 @@
 import React from "react";
 import { Content, ContentVariants, Icon, Title } from "@patternfly/react-core";
 
-import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
-import TimesCircleIcon from '@patternfly/react-icons/dist/esm/icons/times-circle-icon';
+import CheckCircleIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon";
+import TimesCircleIcon from "@patternfly/react-icons/dist/esm/icons/times-circle-icon";
 
 export default function ValidatorResult({ errors }): React.ReactNode {
   if (errors.length === 0) {
@@ -23,9 +23,8 @@ export default function ValidatorResult({ errors }): React.ReactNode {
         <Icon status="danger" size="headingXl">
           <TimesCircleIcon />
         </Icon>{" "}
-        The profile is invalid
+        The profile is invalid, {errors.length === 1 ? "found error:" : `found ${errors.length} errors:`}
       </Title>
-      <Title headingLevel="h3">Found errors:</Title>
       <Content component={ContentVariants.ul}>
         {errors?.map((e) => (
           <Content component={ContentVariants.li} key={e}>
