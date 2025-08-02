@@ -7,7 +7,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
 const BG_IMAGES_DIRNAME = "bgimages";
-const ASSET_PATH = process.env.ASSET_PATH || "/";
+const ASSET_PATH = process.env.ASSET_PATH || "./";
 module.exports = (env) => {
   return {
     module: {
@@ -109,7 +109,7 @@ module.exports = (env) => {
     output: {
       filename: "[name].bundle.js",
       path: path.resolve(__dirname, "dist"),
-      publicPath: ASSET_PATH,
+      publicPath: env === "production" ? ASSET_PATH : "/",
     },
     plugins: [
       new HtmlWebpackPlugin({
