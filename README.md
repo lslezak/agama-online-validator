@@ -3,9 +3,22 @@
 > [!NOTE]  
 > This is an experimental project! There might be bugs and the UI is not perfect!
 
-Here are the sources for the [Agama]() autoinstallation profile validator.
+Here are the sources for the [Agama](https://agama-project.github.io/) autoinstallation profile
+validator.
 
-The validator is available online at ...
+## Online version
+
+The validator is available online at https://lslezak.github.io/agama-online-validator/.
+
+## Offline version
+
+You can download the [offline ZIP
+archive](https://lslezak.github.io/agama-online-validator/agama-validator.zip)
+with the validator. The offline validator runs completely locally and does not
+need internet connection at all.
+
+Just unpack the `agama-validator.zip` archive and open the
+`agama-validator/index.html` file in your browser.
 
 ## Defined scripts
 
@@ -32,5 +45,5 @@ npm run bundle-profile:analyze
 npm run build && npm run start
 ```
 
-The reposotory structure was based on the [patternfly-react-seed](
+The repository structure was based on the [patternfly-react-seed](
 https://github.com/patternfly/patternfly-react-seed) repository.
