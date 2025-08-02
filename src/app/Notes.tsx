@@ -1,6 +1,6 @@
 import React from "react";
 import { Content, ContentVariants, Icon, Title } from "@patternfly/react-core";
-import BugIcon from '@patternfly/react-icons/dist/esm/icons/bug-icon';
+import BugIcon from "@patternfly/react-icons/dist/esm/icons/bug-icon";
 
 export default function Notes(): React.ReactNode {
   return (
@@ -17,6 +17,15 @@ export default function Notes(): React.ReactNode {
           The profile is validated directly in your browser, no data is sent outside of your machine. It is safe to
           include passwords, registration keys or similar sensitive data in the validated profile.
         </Content>
+        {
+          // do not display when running locally, the link only works from the github pages build
+          new URL(document.URL).hostname.endsWith(".github.io") && (
+            <Content component={ContentVariants.li}>
+              You can download the <a href="./agama-validator.zip">offline validator version</a> and use the validator
+              locally even without any internet connection.
+            </Content>
+          )
+        }
       </Content>
     </>
   );
