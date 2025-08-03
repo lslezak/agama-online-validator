@@ -21,7 +21,9 @@ const App: React.FunctionComponent = () => {
         <ProfileEditor/>
       </PageSection>
       <PageSection variant="secondary">
+        <PageSection>
         <Notes />
+        </PageSection>
       </PageSection>
     </Page>
   );
