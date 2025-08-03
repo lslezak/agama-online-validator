@@ -386,8 +386,7 @@
                 "type": "array",
                 "items": {
                   "description": "DNS search domains",
-                  "type": "string",
-                  "additionalProperties": false
+                  "type": "string"
                 }
               },
               "ignoreAutoDns": {
