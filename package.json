@@ -68,6 +68,7 @@
     "monaco-editor-webpack-plugin": "^7.1.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-resizable": "^3.0.5",
     "sirv-cli": "^3.0.0"
   }
 }

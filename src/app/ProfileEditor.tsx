@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Resizable, ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 import {
   Alert,
   AlertActionCloseButton,
@@ -32,12 +34,16 @@ const validator =
     ? undefined
     : ajv.addSchema(storageSchema).addSchema(iScsiSchema).compile(profileSchema);
 
+// height of a single line
+const lineHeight = 19;
+
 export default function ProfileEditor(): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
   const [filename, setFilename] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([] as string[]);
   const [showAlert, setShowAlert] = useState(true);
+  const [height, setHeight] = useState(30*lineHeight);
 
   const handleFileInputChange = (_, file: File) => {
     setFilename(file.name);
@@ -123,6 +129,10 @@ export default function ProfileEditor(): React.ReactNode {
     });
   }
 
+  const onResize = (_event, data) => {
+    setHeight(data.size.height);
+  };
+
   return (
     <>
       {showAlert && validator && (
@@ -165,16 +175,24 @@ export default function ProfileEditor(): React.ReactNode {
           }}
         >
           {!validator && (
-            <CodeEditor
-              isLineNumbersVisible={true}
-              isReadOnly={false}
-              isMinimapVisible={false}
-              code={value}
-              onChange={onChange}
-              language={Language.json}
-              onEditorDidMount={onEditorDidMount}
-              height="50vh"
-            />
+            <ResizableBox
+              axis="y"
+              minConstraints={[undefined, 10*lineHeight]}
+              height={height}
+              onResize={onResize}
+              draggableOpts={{grid: [lineHeight, lineHeight]}}
+            >
+              <CodeEditor
+                isLineNumbersVisible={true}
+                isReadOnly={false}
+                isMinimapVisible={false}
+                code={value}
+                onChange={onChange}
+                language={Language.json}
+                onEditorDidMount={onEditorDidMount}
+                height={`${height - lineHeight}px`}
+              />
+            </ResizableBox>
           )}
           {value === "" && (
             <FileUploadHelperText>
