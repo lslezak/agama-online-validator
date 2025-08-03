@@ -43,7 +43,7 @@ export default function ProfileEditor(): React.ReactNode {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([] as string[]);
   const [showAlert, setShowAlert] = useState(true);
-  const [height, setHeight] = useState(30*lineHeight);
+  const [height, setHeight] = useState(30 * lineHeight);
 
   const handleFileInputChange = (_, file: File) => {
     setFilename(file.name);
@@ -177,10 +177,10 @@ export default function ProfileEditor(): React.ReactNode {
           {!validator && (
             <ResizableBox
               axis="y"
-              minConstraints={[undefined, 10*lineHeight]}
+              minConstraints={[undefined, 10 * lineHeight]}
               height={height}
               onResize={onResize}
-              draggableOpts={{grid: [lineHeight, lineHeight]}}
+              draggableOpts={{ grid: [lineHeight, lineHeight] }}
             >
               <CodeEditor
                 isLineNumbersVisible={true}
@@ -194,21 +194,17 @@ export default function ProfileEditor(): React.ReactNode {
               />
             </ResizableBox>
           )}
-          {value === "" && (
+          {value === "" ? (
             <FileUploadHelperText>
               <HelperText>
                 <HelperTextItem id="helper-text">Write or upload a JSON file</HelperTextItem>
               </HelperText>
             </FileUploadHelperText>
+          ) : (
+            <ValidatorResult errors={errors} />
           )}
         </FileUpload>
       </PageSection>
-
-      {value !== "" && (
-        <PageSection>
-          <ValidatorResult errors={errors} />
-        </PageSection>
-      )}
     </>
   );
 }
