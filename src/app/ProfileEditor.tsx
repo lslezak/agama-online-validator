@@ -139,7 +139,7 @@ export default function ProfileEditor(): React.ReactNode {
   const download = () => {
     const blob = new Blob([value], { type: "application/json" });
     const a = document.createElement("a");
-    if (filename) a.download = filename;
+    a.download = filename || "profile.json";
     a.href = window.URL.createObjectURL(blob);
     a.target = "_blank";
     a.style.display = "none";
