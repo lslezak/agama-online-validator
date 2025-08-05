@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { Resizable, ResizableBox } from "react-resizable";
+import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import {
   Alert,
   AlertActionCloseButton,
+  Button,
   DropEvent,
   FileUpload,
   FileUploadHelperText,
   HelperText,
   HelperTextItem,
   PageSection,
+  Split,
+  SplitItem
 } from "@patternfly/react-core";
 import { CodeEditor, Language } from "@patternfly/react-code-editor";
 import * as monaco from "monaco-editor";
@@ -133,6 +136,19 @@ export default function ProfileEditor(): React.ReactNode {
     setHeight(data.size.height);
   };
 
+  const download = () => {
+    const blob = new Blob([value], { type: "application/json" });
+    const a = document.createElement("a");
+    if (filename) a.download = filename;
+    a.href = window.URL.createObjectURL(blob);
+    a.target = "_blank";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
+  };
+
   return (
     <>
       {showAlert && validator && (
@@ -201,7 +217,17 @@ export default function ProfileEditor(): React.ReactNode {
               </HelperText>
             </FileUploadHelperText>
           ) : (
-            <ValidatorResult errors={errors} />
+            <Split>
+              <SplitItem>
+                <ValidatorResult errors={errors} />
+              </SplitItem>
+              <SplitItem isFilled />
+              <SplitItem>
+                <Button variant="control" onClick={download}>
+                  Save file
+                </Button>
+              </SplitItem>
+            </Split>
           )}
         </FileUpload>
       </PageSection>
