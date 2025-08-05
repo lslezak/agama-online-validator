@@ -46,9 +46,8 @@ jobs:
         run: npm run build
 
       - name: Build ZIP archive
-        run: mv dist agama-validator && zip agama-validator.zip agama-validator/*.html
-             agama-validator/*.js agama-validator/*.css agama-validator/images/*
-             agama-validator/*.woff2 && mv agama-validator.zip agama-validator/
+        run: mv dist agama-validator && zip -r agama-validator.zip agama-validator -x "*.map" &&
+             mv agama-validator.zip agama-validator/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
