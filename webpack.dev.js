@@ -21,6 +21,7 @@ module.exports = merge(common("development"), {
     client: {
       overlay: true,
     },
+    hot: true,
   },
   module: {
     rules: [

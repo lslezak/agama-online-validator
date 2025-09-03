@@ -12,7 +12,7 @@ import {
   HelperTextItem,
   PageSection,
   Split,
-  SplitItem
+  SplitItem,
 } from "@patternfly/react-core";
 import { CodeEditor, Language } from "@patternfly/react-code-editor";
 import * as monaco from "monaco-editor";
@@ -40,7 +40,7 @@ const validator =
 // height of a single line
 const lineHeight = 19;
 
-export default function ProfileEditor(): React.ReactNode {
+export default function ProfileEditor({isDarkTheme}): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
   const [filename, setFilename] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -203,6 +203,7 @@ export default function ProfileEditor(): React.ReactNode {
                 isReadOnly={false}
                 isMinimapVisible={false}
                 code={value}
+                isDarkTheme={isDarkTheme}
                 onChange={onChange}
                 language={Language.json}
                 onEditorDidMount={onEditorDidMount}
