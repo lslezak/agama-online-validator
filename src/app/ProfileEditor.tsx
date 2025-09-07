@@ -59,6 +59,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
       ...monaco.languages.json.jsonDefaults.diagnosticsOptions,
       validate: true,
+      enableSchemaRequest: false,
       schemas: schema,
     });
   }
