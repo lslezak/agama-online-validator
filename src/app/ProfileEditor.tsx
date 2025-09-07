@@ -14,16 +14,19 @@ import {
   Split,
   SplitItem,
 } from "@patternfly/react-core";
+
 import { CodeEditor, Language } from "@patternfly/react-code-editor";
 import * as monaco from "monaco-editor";
 import { loader } from "@monaco-editor/react";
+import * as radashi from "radashi";
+
 import Ajv2019 from "ajv/dist/2019";
 
 import ValidatorResult from "./ValidatorResult";
 // import the JSON schema definition
-import profileSchema from "../schema/profile.schema.json";
-import storageSchema from "../schema/storage.schema.json";
-import iScsiSchema from "../schema/iscsi.schema.json";
+import profileSchema from "../schema/sle-16/profile.schema.json";
+import storageSchema from "../schema/sle-16/storage.schema.json";
+import iScsiSchema from "../schema/sle-16/iscsi.schema.json";
 
 // allow not perfectly valid JSON schema definition, report all errors (not just the first found)
 const ajv = new Ajv2019({ strict: false, allErrors: true });
@@ -40,13 +43,25 @@ const validator =
 // height of a single line
 const lineHeight = 19;
 
-export default function ProfileEditor({isDarkTheme}): React.ReactNode {
+export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
   const [filename, setFilename] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([] as string[]);
   const [showAlert, setShowAlert] = useState(true);
   const [height, setHeight] = useState(30 * lineHeight);
+
+  // uh, setting the same validation schema again causes strange validation error loop =:-o
+  // set it only when it has been changed
+  if (!radashi.isEqual(monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas, schema)) {
+    console.log("Setting editor schema", schema[0] && schema[0].uri);
+
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+      ...monaco.languages.json.jsonDefaults.diagnosticsOptions,
+      validate: true,
+      schemas: schema,
+    });
+  }
 
   const handleFileInputChange = (_, file: File) => {
     setFilename(file.name);
@@ -78,31 +93,22 @@ export default function ProfileEditor({isDarkTheme}): React.ReactNode {
     editor.focus();
     // set default indentation and tab size
     monaco.editor.getModels()[0].updateOptions({ tabSize: 2, indentSize: 2, insertSpaces: true });
-    // enable validation and import the schema
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-      validate: true,
-      // it can automatically download the schema file with fetch() if the URL points to https://raw.githubusercontent.com/...
-      // enableSchemaRequest: true,
-      schemas: [
-        {
-          uri: "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/agama-lib/share/profile.schema.json",
-          fileMatch: ["*"],
-          schema: profileSchema,
-        },
-        {
-          uri: "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/agama-lib/share/storage.schema.json",
-          schema: storageSchema,
-        },
-        {
-          uri: "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/agama-lib/share/iscsi.schema.json",
-          schema: iScsiSchema,
-        },
-      ],
+
+    // // this allows getting exact location of the validation errors
+    // editor.onDidChangeModelDecorations(() => {
+    //   const model = editor.getModel();
+    //   const modelMarkers = monaco.editor.getModelMarkers(model);
+    //   console.log("changed markers:", { modelMarkers });
+    // });
+
+    monaco.editor.onDidChangeMarkers(() => {
+      const messages = monaco.editor.getModelMarkers({ owner: "json" }).map((m) => m.message);
+      setErrors(messages);
     });
   };
 
-  const onChange = (value: string) => {
-    setValue(value);
+  const onChange = (val: string) => {
+    setValue(val);
   };
 
   if (validator) {
@@ -124,12 +130,6 @@ export default function ProfileEditor({isDarkTheme}): React.ReactNode {
   } else {
     // avoid downloading the monaco editor parts from the CDN
     loader.config({ monaco });
-
-    // register a callback when the reported errors change
-    monaco.editor.onDidChangeMarkers(() => {
-      const messages = monaco.editor.getModelMarkers({ owner: "json" }).map((m) => m.message);
-      setErrors(messages);
-    });
   }
 
   const onResize = (_event, data) => {
@@ -220,7 +220,7 @@ export default function ProfileEditor({isDarkTheme}): React.ReactNode {
           ) : (
             <Split>
               <SplitItem>
-                <ValidatorResult errors={errors} />
+                <ValidatorResult errors={errors} hasSchema={schema.length > 0} />
               </SplitItem>
               <SplitItem isFilled />
               <SplitItem>

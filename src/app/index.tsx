@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import "@patternfly/react-core/dist/styles/base.css";
 import "@app/app.css";
 import {
+  Form,
+  FormGroup,
   Masthead,
   MastheadContent,
   Page,
@@ -17,17 +19,27 @@ import ProfileEditor from "./ProfileEditor";
 import Notes from "./Notes";
 import ThemeSwitcher from "./ThemeSwitcher";
 import { THEME_TYPES, useTheme } from "./useTheme";
+import { ProfileSelector } from "./ProfileSelector";
+import { SchemaDefinition } from "./schemaFetcher";
 
 const App: React.FunctionComponent = () => {
   const theme = useTheme(THEME_TYPES.COLOR);
-
-  const [isDarkTheme, setIsDarktheme] = useState(
+  const [isDarkTheme, setIsDarkTheme] = useState(
     theme.mode === theme.modes.DARK || (theme.mode === theme.modes.SYSTEM && theme.resolvedTheme === theme.modes.DARK),
   );
 
-  const themeChanged = (newTheme) => {
-    setIsDarktheme(newTheme === theme.modes.DARK);
-  };
+  const [schema, setSchema] = useState<SchemaDefinition[]>([]);
+
+  const themeChanged = useCallback(
+    (newTheme) => {
+      setIsDarkTheme(newTheme === theme.modes.DARK);
+    },
+    [theme.modes.DARK],
+  );
+
+  const onSchemaLoad = useCallback((loadedSchema: SchemaDefinition[]) => {
+    setSchema(loadedSchema);
+  }, []);
 
   const masthead = (
     <Masthead>
@@ -49,8 +61,15 @@ const App: React.FunctionComponent = () => {
     <Page masthead={masthead}>
       <PageSection>
         <Title headingLevel="h1">Agama autoinstallation profile editor and validator</Title>
-        <ProfileEditor isDarkTheme={isDarkTheme} />
       </PageSection>
+      <PageSection>
+        <Form>
+          <FormGroup label="Version of the profile">
+            <ProfileSelector onSchemaLoad={onSchemaLoad} />
+          </FormGroup>
+        </Form>
+      </PageSection>
+      <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} />
       <PageSection variant="secondary">
         <PageSection>
           <Notes />

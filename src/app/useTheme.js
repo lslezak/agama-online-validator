@@ -1,6 +1,6 @@
 // Copied from https://github.com/patternfly/patternfly-org/blob/main/packages/documentation-framework/hooks/useTheme.js
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const COLOR_MODES = {
   SYSTEM: 'system',

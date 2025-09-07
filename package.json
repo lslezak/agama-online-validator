@@ -70,6 +70,7 @@
     "@patternfly/react-styles": "^6.0.0",
     "ajv": "^8.17.1",
     "monaco-editor-webpack-plugin": "^7.1.0",
+    "radashi": "^12.6.2",
     "react": "^18",
     "react-dom": "^18",
     "react-resizable": "^3.0.5",

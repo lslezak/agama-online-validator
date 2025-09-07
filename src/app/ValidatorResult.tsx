@@ -3,8 +3,20 @@ import { Content, ContentVariants, Icon, Title } from "@patternfly/react-core";
 
 import CheckCircleIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon";
 import TimesCircleIcon from "@patternfly/react-icons/dist/esm/icons/times-circle-icon";
+import WarningTriangleIcon from "@patternfly/react-icons/dist/esm/icons/warning-triangle-icon";
 
-export default function ValidatorResult({ errors }): React.ReactNode {
+export default function ValidatorResult({ errors, hasSchema }): React.ReactNode {
+  if (!hasSchema) {
+    return (
+      <Title headingLevel="h2">
+        <Icon status="warning" size="headingXl">
+          <WarningTriangleIcon />
+        </Icon>{" "}
+        Missing schema, the profile is not validated
+      </Title>
+    );
+  }
+  
   if (errors.length === 0) {
     return (
       <Title headingLevel="h2">
