@@ -1,11 +1,11 @@
 import React from "react";
-import { Content, ContentVariants, Icon, Title } from "@patternfly/react-core";
+import { Button, Content, ContentVariants, Icon, Title } from "@patternfly/react-core";
 
 import CheckCircleIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon";
 import TimesCircleIcon from "@patternfly/react-icons/dist/esm/icons/times-circle-icon";
 import WarningTriangleIcon from "@patternfly/react-icons/dist/esm/icons/warning-triangle-icon";
 
-export default function ValidatorResult({ errors, hasSchema }): React.ReactNode {
+export default function ValidatorResult({ editor, errors, hasSchema }): React.ReactNode {
   if (!hasSchema) {
     return (
       <Title headingLevel="h2">
@@ -16,7 +16,7 @@ export default function ValidatorResult({ errors, hasSchema }): React.ReactNode 
       </Title>
     );
   }
-  
+
   if (errors.length === 0) {
     return (
       <Title headingLevel="h2">
@@ -39,8 +39,23 @@ export default function ValidatorResult({ errors, hasSchema }): React.ReactNode 
       </Title>
       <Content component={ContentVariants.ul}>
         {errors?.map((e) => (
-          <Content component={ContentVariants.li} key={e}>
-            {e}
+          <Content component={ContentVariants.li} key={e.message}>
+            {e.message} (
+            <Button
+              variant="link"
+              isInline
+              onClick={() => {
+                // move the cursor
+                editor.setPosition({ lineNumber: e.startLineNumber, column: e.startColumn });
+                // scroll if needed
+                editor.revealLineInCenter(e.startLineNumber);
+                // focus back to the editor
+                editor.focus();
+              }}
+            >
+              line {e.startLineNumber}
+            </Button>
+            )
           </Content>
         ))}
       </Content>

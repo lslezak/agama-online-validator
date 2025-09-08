@@ -50,6 +50,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const [errors, setErrors] = useState([] as string[]);
   const [showAlert, setShowAlert] = useState(true);
   const [height, setHeight] = useState(30 * lineHeight);
+  const [monacoEditor, setMonacoEditor] = useState();
 
   // uh, setting the same validation schema again causes strange validation error loop =:-o
   // set it only when it has been changed
@@ -95,17 +96,14 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     // set default indentation and tab size
     monaco.editor.getModels()[0].updateOptions({ tabSize: 2, indentSize: 2, insertSpaces: true });
 
-    // // this allows getting exact location of the validation errors
-    // editor.onDidChangeModelDecorations(() => {
-    //   const model = editor.getModel();
-    //   const modelMarkers = monaco.editor.getModelMarkers(model);
-    //   console.log("changed markers:", { modelMarkers });
-    // });
-
-    monaco.editor.onDidChangeMarkers(() => {
-      const messages = monaco.editor.getModelMarkers({ owner: "json" }).map((m) => m.message);
-      setErrors(messages);
+    // this allows getting exact location of the validation errors
+    editor.onDidChangeModelDecorations(() => {
+      const model = editor.getModel();
+      const modelMarkers = monaco.editor.getModelMarkers(model);
+      setErrors(modelMarkers);
     });
+
+    setMonacoEditor(editor);
   };
 
   const onChange = (val: string) => {
@@ -221,7 +219,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
           ) : (
             <Split>
               <SplitItem>
-                <ValidatorResult errors={errors} hasSchema={schema.length > 0} />
+                <ValidatorResult errors={errors} hasSchema={schema.length > 0} editor={monacoEditor} />
               </SplitItem>
               <SplitItem isFilled />
               <SplitItem>
