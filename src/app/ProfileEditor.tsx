@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import {
@@ -13,12 +13,15 @@ import {
   PageSection,
   Split,
   SplitItem,
+  Tooltip,
 } from "@patternfly/react-core";
 
 import { CodeEditor, Language } from "@patternfly/react-code-editor";
 import * as monaco from "monaco-editor";
 import { loader } from "@monaco-editor/react";
 import * as radashi from "radashi";
+import FullScreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
 import Ajv2019 from "ajv/dist/2019";
 
@@ -50,7 +53,36 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const [errors, setErrors] = useState([] as string[]);
   const [showAlert, setShowAlert] = useState(true);
   const [height, setHeight] = useState(30 * lineHeight);
-  const [monacoEditor, setMonacoEditor] = useState();
+  const [heightNormal, setHeightNormal] = useState(height);
+  const [heightFull, setHeightFull] = useState(undefined as number | undefined);
+  const [monacoEditor, setMonacoEditor] = useState(undefined as monaco.editor.IStandaloneCodeEditor | undefined);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const fsRef = useRef(null as HTMLDivElement | null);
+
+  useEffect(() => {
+    // handle exiting full screen mode by pressing ESC
+    const onFullScreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullScreen(false);
+        setHeight(heightNormal);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", onFullScreenChange);
+
+    if (isFullScreen) {
+      if (heightFull) setHeight(heightFull);
+      else {
+        const defaultFullHeight = Math.floor((window.innerHeight * 0.9) / lineHeight) * lineHeight;
+        setHeightFull(defaultFullHeight);
+        setHeight(defaultFullHeight);
+      }
+    }
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullScreenChange);
+    };
+  }, [heightNormal, isFullScreen, heightFull]);
 
   // uh, setting the same validation schema again causes strange validation error loop =:-o
   // set it only when it has been changed
@@ -90,7 +122,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     setIsLoading(false);
   };
 
-  const onEditorDidMount = (editor, monaco) => {
+  const onEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor, monaco) => {
     editor.layout();
     editor.focus();
     // set default indentation and tab size
@@ -189,46 +221,68 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
             },
           }}
         >
-          {!validator && (
-            <ResizableBox
-              axis="y"
-              minConstraints={[undefined, 10 * lineHeight]}
-              height={height}
-              onResize={onResize}
-              draggableOpts={{ grid: [lineHeight, lineHeight] }}
-            >
-              <CodeEditor
-                isLineNumbersVisible={true}
-                isReadOnly={false}
-                isMinimapVisible={false}
-                code={value}
-                isDarkTheme={isDarkTheme}
-                onChange={onChange}
-                language={Language.json}
-                onEditorDidMount={onEditorDidMount}
-                height={`${height - lineHeight}px`}
-              />
-            </ResizableBox>
-          )}
-          {value === "" ? (
-            <FileUploadHelperText>
-              <HelperText>
-                <HelperTextItem id="helper-text">Write or upload a JSON file</HelperTextItem>
-              </HelperText>
-            </FileUploadHelperText>
-          ) : (
-            <Split>
-              <SplitItem>
-                <ValidatorResult errors={errors} hasSchema={schema.length > 0} editor={monacoEditor} />
-              </SplitItem>
-              <SplitItem isFilled />
-              <SplitItem>
-                <Button variant="control" onClick={download}>
-                  Save file
-                </Button>
-              </SplitItem>
-            </Split>
-          )}
+          <div ref={fsRef} style={{ height: isFullScreen ? "100vh" : "auto" }}>
+            {!validator && (
+              <ResizableBox
+                axis="y"
+                minConstraints={[undefined, 10 * lineHeight]}
+                height={height}
+                onResize={onResize}
+                draggableOpts={{ grid: [lineHeight, lineHeight] }}
+              >
+                <CodeEditor
+                  isLineNumbersVisible={true}
+                  isReadOnly={false}
+                  isMinimapVisible={false}
+                  code={value}
+                  isDarkTheme={isDarkTheme}
+                  onChange={onChange}
+                  language={Language.json}
+                  onEditorDidMount={onEditorDidMount}
+                  height={`${height - lineHeight}px`}
+                />
+              </ResizableBox>
+            )}
+            {value === "" ? (
+              <FileUploadHelperText>
+                <HelperText>
+                  <HelperTextItem id="helper-text">Write or upload a JSON file</HelperTextItem>
+                </HelperText>
+              </FileUploadHelperText>
+            ) : (
+              <Split>
+                <SplitItem>
+                  <ValidatorResult errors={errors} hasSchema={schema.length > 0} editor={monacoEditor} />
+                </SplitItem>
+                <SplitItem isFilled />
+                <SplitItem>
+                  <Tooltip content={isFullScreen ? "Exit full screen" : "Switch to full screen mode"} position="bottom">
+                    <Button
+                      variant="plain"
+                      icon={isFullScreen ? <FullscreenExitIcon /> : <FullScreenIcon />}
+                      onClick={() => {
+                        if (isFullScreen) {
+                          document.exitFullscreen().then(() => {
+                            setHeightFull(height);
+                            setIsFullScreen(false);
+                          });
+                        } else if (fsRef?.current) {
+                          fsRef.current.requestFullscreen().then(() => {
+                            setHeightNormal(height);
+                            setIsFullScreen(true);
+                            if (monacoEditor) monacoEditor.focus();
+                          });
+                        }
+                      }}
+                    />
+                  </Tooltip>
+                  <Button variant="control" onClick={download}>
+                    Save file
+                  </Button>
+                </SplitItem>
+              </Split>
+            )}
+          </div>
         </FileUpload>
       </PageSection>
     </>

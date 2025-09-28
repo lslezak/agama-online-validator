@@ -52,7 +52,7 @@ export default function ThemeSwitcher({ theme, themeChanged }): React.ReactNode 
       shouldFocusToggleOnSelect
     >
       <SelectList>
-        <SelectOption value={theme.modes.SYSTEM} icon={<SystemMode />}>
+        <SelectOption value={theme.modes.SYSTEM} icon={<SystemMode fontSize="small"/>}>
           System default ({theme.resolvedTheme === theme.modes.DARK ? "dark" : "light"})
         </SelectOption>
         <SelectOption value={theme.modes.LIGHT} icon={<LightMode />}>
