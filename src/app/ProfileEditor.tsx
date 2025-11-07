@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import {
-  Alert,
-  AlertActionCloseButton,
   Button,
   DropEvent,
   FileUpload,
@@ -23,26 +21,9 @@ import * as radashi from "radashi";
 import FullScreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
-import Ajv2019 from "ajv/dist/2019";
-
 import ValidatorResult from "./ValidatorResult";
-// import the JSON schema definition
-import profileSchema from "../schema/sle-16/profile.schema.json";
-import storageSchema from "../schema/sle-16/storage.schema.json";
-import iScsiSchema from "../schema/sle-16/iscsi.schema.json";
-
-// allow not perfectly valid JSON schema definition, report all errors (not just the first found)
-const ajv = new Ajv2019({ strict: false, allErrors: true });
 
 const defaultEditorContent = "{\n  \n}";
-
-// the monaco web editor does not work correctly when running from file:// URL
-// in that case use a simple textarea and use the Ajv library for validation
-const validator =
-  new URL(document.URL).protocol !== "file:"
-    ? undefined
-    : ajv.addSchema(storageSchema).addSchema(iScsiSchema).compile(profileSchema);
-
 // height of a single line
 const lineHeight = 19;
 
@@ -51,7 +32,6 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const [filename, setFilename] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([] as string[]);
-  const [showAlert, setShowAlert] = useState(true);
   const [height, setHeight] = useState(30 * lineHeight);
   const [heightNormal, setHeightNormal] = useState(height);
   const [heightFull, setHeightFull] = useState(undefined as number | undefined);
@@ -142,26 +122,8 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     setValue(val);
   };
 
-  if (validator) {
-    try {
-      validator(JSON.parse(value));
-      const messages = validator.errors?.map((e) => `${e.instancePath} ${e.message}`) || [];
-      // remove duplicates
-      const uniqMessages = messages.reduce(function (a, b) {
-        if (a.indexOf(b) < 0) a.push(b);
-        return a;
-      }, [] as string[]);
-
-      if (uniqMessages.length !== errors.length || uniqMessages.toString() !== errors.toString())
-        setErrors(uniqMessages);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      if (errors.length !== 1 || errors[0] !== message) setErrors([message]);
-    }
-  } else {
-    // avoid downloading the monaco editor parts from the CDN
-    loader.config({ monaco });
-  }
+  // avoid downloading the monaco editor parts from the CDN
+  loader.config({ monaco });
 
   const onResize = (_event, data) => {
     setHeight(data.size.height);
@@ -182,20 +144,6 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
 
   return (
     <>
-      {showAlert && validator && (
-        <PageSection>
-          <Alert
-            variant="warning"
-            title="Simple editor"
-            isInline
-            actionClose={<AlertActionCloseButton onClose={() => setShowAlert(false)} />}
-          >
-            When running the editor without any web server (just loaded from a file) then a simplified version of the
-            editor is used. It also runs a different validator which can produce different error messages. For a better
-            user experience it is recommended to use the editor served from a web server.
-          </Alert>
-        </PageSection>
-      )}
       <PageSection>
         <FileUpload
           id="profile-upload"
@@ -203,7 +151,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
           value={value}
           filename={filename}
           multiple={false}
-          hideDefaultPreview={!validator}
+          hideDefaultPreview={true}
           filenamePlaceholder="Drag and drop a JSON file or upload one"
           onFileInputChange={handleFileInputChange}
           onDataChange={handleDataChange}
@@ -222,27 +170,25 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
           }}
         >
           <div ref={fsRef} style={{ height: isFullScreen ? "100vh" : "auto" }}>
-            {!validator && (
-              <ResizableBox
-                axis="y"
-                minConstraints={[undefined, 10 * lineHeight]}
-                height={height}
-                onResize={onResize}
-                draggableOpts={{ grid: [lineHeight, lineHeight] }}
-              >
-                <CodeEditor
-                  isLineNumbersVisible={true}
-                  isReadOnly={false}
-                  isMinimapVisible={false}
-                  code={value}
-                  isDarkTheme={isDarkTheme}
-                  onChange={onChange}
-                  language={Language.json}
-                  onEditorDidMount={onEditorDidMount}
-                  height={`${height - lineHeight}px`}
-                />
-              </ResizableBox>
-            )}
+            <ResizableBox
+              axis="y"
+              minConstraints={[undefined, 10 * lineHeight]}
+              height={height}
+              onResize={onResize}
+              draggableOpts={{ grid: [lineHeight, lineHeight] }}
+            >
+              <CodeEditor
+                isLineNumbersVisible={true}
+                isReadOnly={false}
+                isMinimapVisible={false}
+                code={value}
+                isDarkTheme={isDarkTheme}
+                onChange={onChange}
+                language={Language.json}
+                onEditorDidMount={onEditorDidMount}
+                height={`${height - lineHeight}px`}
+              />
+            </ResizableBox>
             {value === "" ? (
               <FileUploadHelperText>
                 <HelperText>
