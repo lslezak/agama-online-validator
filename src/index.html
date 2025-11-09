@@ -1,17 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Agama autoinstallation profile editor and validator</title>
+    <meta id="appName" name="application-name" content="Agama autoinstallation profile editor and validator" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png" />
+    <link rel="icon" type="image/svg+xml" sizes="any" href="icon.svg" />
+    <link rel="manifest" href="manifest.json" />
+<%=
+htmlWebpackPlugin.tags.headTags.filter((tag) => tag.tagName !== 'script' || !tag.attributes.src.endsWith("/service.js")).join('')
+%>
 
-<head>
-  <meta charset="utf-8">
-  <title>Agama autoinstallation profile editor and validator</title>
-  <meta id="appName" name="application-name" content="Agama autoinstallation profile editor and validator">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 </head>
 
-<body>
-  <noscript>JavaScript is required to run this application.</noscript>
-  <div id="root"></div>
-</body>
-
+  <body>
+    <noscript>JavaScript is required to run this application.</noscript>
+    <div id="root"></div>
+    <script>
+      if ("serviceWorker" in navigator) {
+        console.log("Registering service worker");
+        navigator.serviceWorker.register("service.js");
+      } else {
+        console.error("Service worker not available");
+      }
+    </script>
+  </body>
 </html>

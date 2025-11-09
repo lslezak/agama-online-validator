@@ -22,6 +22,7 @@ import FullScreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
 import ValidatorResult from "./ValidatorResult";
+import { handleLaunchQueue } from "./launchQueue";
 
 const defaultEditorContent = "{\n  \n}";
 // height of a single line
@@ -40,6 +41,8 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const fsRef = useRef(null as HTMLDivElement | null);
 
   useEffect(() => {
+    handleLaunchQueue(setValue);
+
     // handle exiting full screen mode by pressing ESC
     const onFullScreenChange = () => {
       if (!document.fullscreenElement) {

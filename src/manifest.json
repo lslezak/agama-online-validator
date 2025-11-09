@@ -1,0 +1,65 @@
+{
+  "id": "agama-profile-editor",
+  "name": "Agama Profile Editor",
+  "short_name": "Agama Editor",
+  "description": "Agama autoinstallation profile editor with syntax highlighting, code completion and validation.",
+  "lang": "en-US",
+  "start_url": "/",
+  "display": "standalone",
+  "categories": ["JSON", "editor", "validation", "Agama installer"],
+  "icons": [
+    {
+      "src": "icon-16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "application/json": ".json"
+      },
+      "launch_type": "multiple-clients"
+    }
+  ]
+}

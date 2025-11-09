@@ -7,6 +7,7 @@ const { stylePaths } = require("./stylePaths");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserJSPlugin = require("terser-webpack-plugin");
+const webpack = require('webpack');
 
 module.exports = merge(common("production"), {
   mode: "production",
@@ -25,6 +26,9 @@ module.exports = merge(common("production"), {
     new MiniCssExtractPlugin({
       filename: "[name].css",
       chunkFilename: "[name].bundle.css",
+    }),
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1,
     }),
   ],
   module: {
