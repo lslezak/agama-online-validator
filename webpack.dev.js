@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-const path = require("path");
 const { merge } = require("webpack-merge");
 const common = require("./webpack.common.js");
 const { stylePaths } = require("./stylePaths");
@@ -15,9 +14,6 @@ module.exports = merge(common("development"), {
     port: PORT,
     historyApiFallback: true,
     open: true,
-    static: {
-      directory: path.resolve(__dirname, "dist"),
-    },
     client: {
       overlay: true,
     },

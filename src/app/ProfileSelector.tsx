@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   AlertActionLink,
-  Divider,
   MenuToggle,
   MenuToggleElement,
   Select,
