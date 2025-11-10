@@ -41,7 +41,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const fsRef = useRef(null as HTMLDivElement | null);
 
   useEffect(() => {
-    handleLaunchQueue(setValue);
+    handleLaunchQueue(setValue, setFilename);
 
     // handle exiting full screen mode by pressing ESC
     const onFullScreenChange = () => {

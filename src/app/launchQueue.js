@@ -1,5 +1,5 @@
 
-export async function handleLaunchQueue(setFn) {
+export async function handleLaunchQueue(setValueFn, setFileNameFn) {
   if ("launchQueue" in window) {
     window.launchQueue.setConsumer(async (launchParams) => {
       const file = launchParams.files[0];
@@ -7,7 +7,8 @@ export async function handleLaunchQueue(setFn) {
       if (file) {
         const blob = await file.getFile();
         const text = await blob.text();
-        setFn(text);
+        setValueFn(text);
+        setFileNameFn(blob.name);
       }
     });
   }
