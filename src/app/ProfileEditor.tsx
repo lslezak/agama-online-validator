@@ -56,7 +56,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     if (isFullScreen) {
       if (heightFull) setHeight(heightFull);
       else {
-        const defaultFullHeight = Math.floor((window.innerHeight * 0.9) / lineHeight) * lineHeight;
+        const defaultFullHeight = Math.floor((window.innerHeight * 0.96) / lineHeight) * lineHeight;
         setHeightFull(defaultFullHeight);
         setHeight(defaultFullHeight);
       }
@@ -148,31 +148,31 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   return (
     <>
       <PageSection>
-        <FileUpload
-          id="profile-upload"
-          type="text"
-          value={value}
-          filename={filename}
-          multiple={false}
-          hideDefaultPreview={true}
-          filenamePlaceholder="Drag and drop a JSON file or upload one"
-          onFileInputChange={handleFileInputChange}
-          onDataChange={handleDataChange}
-          onTextChange={handleTextChange}
-          onReadStarted={handleFileReadStarted}
-          onReadFinished={handleFileReadFinished}
-          onClearClick={handleClear}
-          isLoading={isLoading}
-          allowEditingUploadedText={true}
-          validated={value.length === 0 ? undefined : errors.length === 0 ? "success" : "error"}
-          browseButtonText="Select file"
-          dropzoneProps={{
-            accept: {
-              "application/json": [".json"],
-            },
-          }}
-        >
-          <div ref={fsRef} style={{ height: isFullScreen ? "100vh" : "auto" }}>
+        <div ref={fsRef} style={{ height: isFullScreen ? "100vh" : "auto" }}>
+          <FileUpload
+            id="profile-upload"
+            type="text"
+            value={value}
+            filename={filename}
+            multiple={false}
+            hideDefaultPreview={true}
+            filenamePlaceholder="Drag and drop a JSON file or upload one"
+            onFileInputChange={handleFileInputChange}
+            onDataChange={handleDataChange}
+            onTextChange={handleTextChange}
+            onReadStarted={handleFileReadStarted}
+            onReadFinished={handleFileReadFinished}
+            onClearClick={handleClear}
+            isLoading={isLoading}
+            allowEditingUploadedText={true}
+            validated={value.length === 0 ? undefined : errors.length === 0 ? "success" : "error"}
+            browseButtonText="Select file"
+            dropzoneProps={{
+              accept: {
+                "application/json": [".json"],
+              },
+            }}
+          >
             <ResizableBox
               axis="y"
               minConstraints={[undefined, 10 * lineHeight]}
@@ -231,8 +231,8 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
                 </SplitItem>
               </Split>
             )}
-          </div>
-        </FileUpload>
+          </FileUpload>
+        </div>
       </PageSection>
     </>
   );
