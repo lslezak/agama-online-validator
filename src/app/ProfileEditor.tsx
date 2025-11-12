@@ -19,7 +19,6 @@ import * as monaco from "monaco-editor";
 import { loader } from "@monaco-editor/react";
 import * as radashi from "radashi";
 import FullScreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
 import ValidatorResult from "./ValidatorResult";
 import { handleLaunchQueue } from "./launchQueue";
@@ -56,7 +55,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     if (isFullScreen) {
       if (heightFull) setHeight(heightFull);
       else {
-        const defaultFullHeight = Math.floor((window.innerHeight * 0.96) / lineHeight) * lineHeight;
+        const defaultFullHeight = Math.floor((window.innerHeight * 0.85) / lineHeight) * lineHeight;
         setHeightFull(defaultFullHeight);
         setHeight(defaultFullHeight);
       }
@@ -208,7 +207,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
                   <Tooltip content={isFullScreen ? "Exit full screen" : "Switch to full screen mode"} position="bottom">
                     <Button
                       variant="plain"
-                      icon={isFullScreen ? <FullscreenExitIcon /> : <FullScreenIcon />}
+                      icon={<FullScreenIcon />}
                       onClick={() => {
                         if (isFullScreen) {
                           document.exitFullscreen().then(() => {

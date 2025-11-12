@@ -15,7 +15,8 @@ module.exports = merge(common("development"), {
     historyApiFallback: true,
     open: true,
     client: {
-      overlay: true,
+      // for some reason the overlay crashes when switching to/from fullscreen
+      overlay: false,
     },
     hot: true,
   },
