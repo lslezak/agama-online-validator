@@ -69,6 +69,11 @@ self.addEventListener("activate", (event) => {
 
   event.waitUntil(
     (async () => {
+      // enable navigation preloads
+      if (self.registration.navigationPreload) {
+        await self.registration.navigationPreload.enable();
+      }
+
       const names = await caches.keys();
       await Promise.all(
         names.map((name) => {
@@ -93,8 +98,8 @@ self.addEventListener("fetch", (event) => {
           console.log("Fetching", event.request.url);
           const networkResponse = await fetch(event.request);
           if (networkResponse.ok) {
-            const clonedResponse = networkResponse.clone()
-            caches.open(CACHE).then(cache => cache.put(event.request, clonedResponse));
+            const clonedResponse = networkResponse.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, clonedResponse));
             return networkResponse;
           }
         } catch (error) {
@@ -116,7 +121,10 @@ self.addEventListener("fetch", (event) => {
 
       // use the preloaded response if present
       const response = await event.preloadResponse;
-      if (response) return response;
+      if (response) {
+        console.log("Preloaded", event.request.url);
+        return response;
+      }
 
       console.log("Fetching", event.request.url);
 
