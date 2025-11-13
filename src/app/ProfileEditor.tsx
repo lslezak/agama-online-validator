@@ -30,6 +30,7 @@ const lineHeight = 19;
 export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
   const [filename, setFilename] = useState("");
+  const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([] as string[]);
   const [height, setHeight] = useState(30 * lineHeight);
@@ -40,7 +41,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const fsRef = useRef(null as HTMLDivElement | null);
 
   useEffect(() => {
-    handleLaunchQueue(setValue, setFilename);
+    handleLaunchQueue(setValue, setFilename, setFileHandle);
 
     // handle exiting full screen mode by pressing ESC
     const onFullScreenChange = () => {
@@ -80,6 +81,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   }
 
   const handleFileInputChange = (_, file: File) => {
+    setFileHandle(undefined);
     setFilename(file.name);
   };
 
@@ -88,6 +90,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   };
 
   const handleDataChange = (_event: DropEvent, value: string) => {
+    setFileHandle(undefined);
     setValue(value);
   };
 
@@ -131,17 +134,36 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     setHeight(data.size.height);
   };
 
-  const download = () => {
-    const blob = new Blob([value], { type: "application/json" });
-    const a = document.createElement("a");
-    a.download = filename || "profile.json";
-    a.href = window.URL.createObjectURL(blob);
-    a.target = "_blank";
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(a.href);
-    document.body.removeChild(a);
+  const save = async () => {
+    if (fileHandle) {
+      const blob = new Blob([value], { type: "application/json" });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    }
+  };
+
+  const saveAs = async () => {
+    try {
+      const handle = await window.showSaveFilePicker({
+        types: [
+          {
+            description: "Agama autoinstallation profile",
+            accept: {
+              "application/json": [".json"],
+            },
+          },
+        ],
+      });
+      const blob = new Blob([value], { type: "application/json" });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      setFileHandle(handle);
+      setFilename(handle.name);
+    } catch (err) {
+      console.error("Cannot save the file: ", err);
+    }
   };
 
   return (
@@ -224,8 +246,13 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
                       }}
                     />
                   </Tooltip>
-                  <Button variant="control" onClick={download}>
-                    Save file
+                  {fileHandle && (
+                    <Button variant="control" onClick={save}>
+                      Save
+                    </Button>
+                  )}{" "}
+                  <Button variant="control" onClick={saveAs}>
+                    Save as...
                   </Button>
                 </SplitItem>
               </Split>
