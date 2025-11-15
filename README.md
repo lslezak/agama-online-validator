@@ -22,10 +22,12 @@ application. This adds creates a shortcut on the desktop and associates the
 applications in the [Mozilla
 documentation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing).
 
-*Note: This is supported only in some browsers. Not all browsers support
+_Note: This is supported only in some browsers. Not all browsers support
 installing web applications (PWA). It should work in all Chrome based browsers.
 Firefox requires a [PWA
-extension](https://addons.mozilla.org/en-US/firefox/addon/pwas-for-firefox/).*
+extension](https://addons.mozilla.org/en-US/firefox/addon/pwas-for-firefox/).
+See more details about the web apps in the [Chrome
+documentation](https://support.google.com/chrome/answer/9658361?hl=en&ref_topic=7439636)._
 
 You can download the [ZIP
 archive](https://lslezak.github.io/agama-online-validator/agama-validator.zip)
@@ -60,5 +62,4 @@ npm run bundle-profile:analyze
 npm run build && npm run start
 ```
 
-The repository structure was based on the [patternfly-react-seed](
-https://github.com/patternfly/patternfly-react-seed) repository.
+The repository structure was based on the [patternfly-react-seed](https://github.com/patternfly/patternfly-react-seed) repository.
