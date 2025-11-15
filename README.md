@@ -34,8 +34,12 @@ archive](https://lslezak.github.io/agama-online-validator/agama-validator.zip)
 with the built validator and deploy it on a local HTTP server or directly in
 your machine.
 
-<!-- Just unpack the `agama-validator.zip` archive and open the
-`agama-validator/index.html` file in your browser. -->
+## PWA documentation links
+
+- https://docs.pwabuilder.com/
+- https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps
+- https://github.com/mdn/pwa-examples
+- https://support.google.com/chrome/answer/9658361?hl=en&ref_topic=7439636
 
 ## Defined scripts
 
