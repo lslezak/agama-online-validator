@@ -28,7 +28,7 @@ export default function Notes({ webAppAvailable }): React.ReactNode {
             <p>
               The validator can be also used offline, without any internet access. The page and the JSON validation
               schema files are cached in the browser. If network is not available these cached files are used to provide
-              the functionality.
+              the functionality. In some browsers it can be installed as a web application.
             </p>
 
             {webAppAvailable && (
