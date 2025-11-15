@@ -132,7 +132,7 @@ const App: React.FunctionComponent = () => {
       <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} />
       <PageSection variant="secondary">
         <PageSection>
-          <Notes />
+          <Notes webAppAvailable={!!installPrompt}/>
         </PageSection>
       </PageSection>
     </Page>
