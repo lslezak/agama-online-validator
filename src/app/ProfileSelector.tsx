@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   AlertActionLink,
-  Divider,
   MenuToggle,
   MenuToggleElement,
   Select,
@@ -11,7 +10,6 @@ import {
 } from "@patternfly/react-core";
 import { SchemaDefinition, fetchSchema } from "./schemaFetcher";
 import { ONLINE_SCHEMA } from "./onlineSchema";
-import { OFFLINE_SCHEMA } from "./offlineSchema";
 
 interface ProfileSelectorProps {
   onSchemaLoad(arg: SchemaDefinition[]): void;
@@ -47,11 +45,6 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
           }
         })
         .finally(() => setIsLoading(false));
-    } else {
-      const localSchema = OFFLINE_SCHEMA.find((schema) => schema.label === selected);
-      if (localSchema) {
-        onSchemaLoad(localSchema.schema);
-      }
     }
   }, [onSchemaLoad]);
 
@@ -90,14 +83,6 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
             </SelectOption>
           ))}
         </SelectList>
-        <Divider />
-        <SelectList>
-          {OFFLINE_SCHEMA.map((schema, index) => (
-            <SelectOption key={index} value={schema.label} description={schema.description}>
-              {schema.label}
-            </SelectOption>
-          ))}
-        </SelectList>
       </Select>
       {isLoading && " Loading..."}
       {isError && (
@@ -111,7 +96,6 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
             The schema definition could not be downloaded. The profile cannot be validated without the schema
             definition.
           </p>
-          <p>Either try downloading the schema again or select an embedded offline schema.</p>
         </Alert>
       )}
     </>

@@ -36,6 +36,9 @@ module.exports = (env) => {
             path.resolve(__dirname, "node_modules/@patternfly/patternfly/assets/fonts"),
             path.resolve(__dirname, "node_modules/@patternfly/patternfly/assets/pficon"),
           ],
+          generator: {
+            filename: "[name][ext]",
+          },
         },
         {
           test: /\.svg$/,
@@ -106,13 +109,19 @@ module.exports = (env) => {
         },
       ],
     },
+    entry: {
+      app: path.resolve(__dirname, "src/index.tsx"),
+      service: path.resolve(__dirname, "src/service.ts"),
+    },
     output: {
-      filename: "[name].bundle.js",
+      filename: "[name].js",
       path: path.resolve(__dirname, "dist"),
       publicPath: env === "production" ? ASSET_PATH : "/",
     },
     plugins: [
       new HtmlWebpackPlugin({
+        // do not automatically add the <script> tags we do not want it for the service.js file
+        inject: false,
         template: path.resolve(__dirname, "src", "index.html"),
       }),
       new Dotenv({
@@ -120,7 +129,10 @@ module.exports = (env) => {
         silent: true,
       }),
       new CopyPlugin({
-        patterns: [{ from: "./src/favicon.ico", to: "images" }],
+        patterns: [
+          { from: "./src/icon*.*", to: "[name][ext]" },
+          { from: "./src/manifest.json", to: "manifest.json" },
+        ],
       }),
       new MonacoWebpackPlugin({ languages: ["json"] }),
     ],

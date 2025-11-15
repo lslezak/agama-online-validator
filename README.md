@@ -12,13 +12,34 @@ The validator is available online at https://lslezak.github.io/agama-online-vali
 
 ## Offline version
 
-You can download the [offline ZIP
-archive](https://lslezak.github.io/agama-online-validator/agama-validator.zip)
-with the validator. The offline validator runs completely locally and does not
-need internet connection at all.
+The validator can be also used offline, without any internet access. The page
+and the JSON validation schema files are cached in the browser. If network is
+not available these cached files are used to provide the functionality.
 
-<!-- Just unpack the `agama-validator.zip` archive and open the
-`agama-validator/index.html` file in your browser. -->
+Press the "Install app" button in the top right corner to install it as a web
+application. This adds creates a shortcut on the desktop and associates the
+`*.json` extension with the web application. See more details about the web
+applications in the [Mozilla
+documentation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing).
+
+_Note: This is supported only in some browsers. Not all browsers support
+installing web applications (PWA). It should work in all Chrome based browsers.
+Firefox requires a [PWA
+extension](https://addons.mozilla.org/en-US/firefox/addon/pwas-for-firefox/).
+See more details about the web apps in the [Chrome
+documentation](https://support.google.com/chrome/answer/9658361?hl=en&ref_topic=7439636)._
+
+You can download the [ZIP
+archive](https://lslezak.github.io/agama-online-validator/agama-validator.zip)
+with the built validator and deploy it on a local HTTP server or directly in
+your machine.
+
+## PWA documentation links
+
+- https://docs.pwabuilder.com/
+- https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps
+- https://github.com/mdn/pwa-examples
+- https://support.google.com/chrome/answer/9658361?hl=en&ref_topic=7439636
 
 ## Defined scripts
 
@@ -45,5 +66,4 @@ npm run bundle-profile:analyze
 npm run build && npm run start
 ```
 
-The repository structure was based on the [patternfly-react-seed](
-https://github.com/patternfly/patternfly-react-seed) repository.
+The repository structure was based on the [patternfly-react-seed](https://github.com/patternfly/patternfly-react-seed) repository.

@@ -9,7 +9,7 @@ export interface SchemaDefinition {
 }
 
 export async function fetchSchema(url: string): Promise<SchemaDefinition[]> {
-  console.log("Downloading ", url);
+  console.log("Downloading schema", url);
 
   const response = await fetch(url);
   const json = await response.json();
