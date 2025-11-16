@@ -24,6 +24,11 @@ const RESOURCES: string[] = [
   ASSET_PATH + "icon.svg",
   ASSET_PATH + "icon-16.png",
   ASSET_PATH + "icon-32.png",
+  ASSET_PATH + "icon-64.png",
+  ASSET_PATH + "icon-128.png",
+  ASSET_PATH + "icon-144.png",
+  ASSET_PATH + "icon-192.png",
+  ASSET_PATH + "icon-256.png",
   ASSET_PATH + "icon-512.png",
   // fonts
   ASSET_PATH + "f6283f7ccaed1249d9eb.ttf",
