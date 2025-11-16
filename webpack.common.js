@@ -130,8 +130,35 @@ module.exports = (env) => {
       }),
       new CopyPlugin({
         patterns: [
-          { from: "./src/icon*.*", to: "[name][ext]" },
-          { from: "./src/manifest.json", to: "manifest.json" },
+          { from: "./src/icons/icon*.*", to: "[name][ext]" },
+          {
+            from: "./src/manifest.json",
+            to: "manifest.json",
+            transform(content, _path) {
+              // generate icon entries
+              const icons = [];
+              const sizes = [16, 32, 64, 128, 144, 192, 256, 512];
+              for (const size of sizes) {
+                const icon = {
+                  src: `./icon-${size}.png`,
+                  sizes: `${size}x${size}`,
+                  type: "image/png",
+                  purpose: "maskable",
+                };
+
+                icons.push(icon);
+                const clone = Object.assign({}, icon);
+                clone.purpose = "any";
+                icons.push(clone);
+              }
+
+              var manifest = JSON.parse(content.toString());
+              // append to the manifest SVG icons
+              manifest.icons = manifest.icons.concat(icons);
+              // no indentation to minify the file
+              return JSON.stringify(manifest);
+            },
+          },
         ],
       }),
       new MonacoWebpackPlugin({ languages: ["json"] }),
