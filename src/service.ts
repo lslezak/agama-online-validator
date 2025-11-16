@@ -9,30 +9,31 @@ const VERSION = "v1";
 
 // name of the cache
 const CACHE = `agama-editor-${VERSION}`;
+const ASSET_PATH = process.env.ASSET_PATH || (process.env.NODE_ENV === "development" ? "/" : "./");
 
 // resources downloaded to the offline cache
-const RESOURCES = [
+const RESOURCES: string[] = [
   // // HTML files
-  "/",
+  ASSET_PATH,
   // JS files
-  "/editor.worker.js",
-  "/json.worker.js",
-  "/manifest.json",
-  "/app.js",
+  ASSET_PATH + "editor.worker.js",
+  ASSET_PATH + "json.worker.js",
+  ASSET_PATH + "manifest.json",
+  ASSET_PATH + "app.js",
   // icons
-  "/icon.svg",
-  "/icon-16.png",
-  "/icon-32.png",
-  "/icon-512.png",
+  ASSET_PATH + "icon.svg",
+  ASSET_PATH + "icon-16.png",
+  ASSET_PATH + "icon-32.png",
+  ASSET_PATH + "icon-512.png",
   // fonts
-  "/f6283f7ccaed1249d9eb.ttf",
-  "/pf-v6-pficon.woff2",
-  "/RedHatDisplayVF-Italic.woff2",
-  "/RedHatDisplayVF.woff2",
-  "/RedHatMonoVF-Italic.woff2",
-  "/RedHatMonoVF.woff2",
-  "/RedHatTextVF-Italic.woff2",
-  "/RedHatTextVF.woff2",
+  ASSET_PATH + "f6283f7ccaed1249d9eb.ttf",
+  ASSET_PATH + "pf-v6-pficon.woff2",
+  ASSET_PATH + "RedHatDisplayVF-Italic.woff2",
+  ASSET_PATH + "RedHatDisplayVF.woff2",
+  ASSET_PATH + "RedHatMonoVF-Italic.woff2",
+  ASSET_PATH + "RedHatMonoVF.woff2",
+  ASSET_PATH + "RedHatTextVF-Italic.woff2",
+  ASSET_PATH + "RedHatTextVF.woff2",
   // the remote schema files
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/profile.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/storage.schema.json",
@@ -43,11 +44,11 @@ const RESOURCES = [
 ];
 
 if (process.env.NODE_ENV === "development") {
-  RESOURCES.push("/vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js.js");
+  RESOURCES.push(ASSET_PATH + "vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js.js");
 }
 
 if (process.env.NODE_ENV === "production") {
-  RESOURCES.push("/app.css");
+  RESOURCES.push(ASSET_PATH + "app.css");
 }
 
 // download the resources to the offline cache
@@ -57,7 +58,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      console.log("Filling cache");
+      console.log("Filling cache", RESOURCES);
       cache.addAll(RESOURCES).catch((error) => console.error("Caching error ", error));
     })(),
   );

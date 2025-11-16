@@ -4,7 +4,7 @@
   "short_name": "Agama Editor",
   "description": "Agama autoinstallation profile editor with syntax highlighting, code completion and validation.",
   "lang": "en-US",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "categories": ["JSON", "editor", "validation", "Agama installer"],
   "icons": [
@@ -55,7 +55,7 @@
   ],
   "file_handlers": [
     {
-      "action": "/",
+      "action": "./",
       "accept": {
         "application/json": ".json"
       },
