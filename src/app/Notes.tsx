@@ -5,7 +5,7 @@ import BugIcon from "@patternfly/react-icons/dist/esm/icons/bug-icon";
 export default function Notes({ webAppAvailable }): React.ReactNode {
   return (
     <>
-      <Title headingLevel="h2">Notes</Title>
+      <Title headingLevel="h3">Notes</Title>
       <Content component={ContentVariants.ul}>
         <Content component={ContentVariants.li}>
           This validator is just an experimental proof of concept, there might be bugs!{" "}

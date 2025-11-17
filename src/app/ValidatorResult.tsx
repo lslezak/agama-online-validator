@@ -8,7 +8,7 @@ import WarningTriangleIcon from "@patternfly/react-icons/dist/esm/icons/warning-
 export default function ValidatorResult({ editor, errors, hasSchema }): React.ReactNode {
   if (!hasSchema) {
     return (
-      <Title headingLevel="h2">
+      <Title headingLevel="h3">
         <Icon status="warning" size="headingXl">
           <WarningTriangleIcon />
         </Icon>{" "}
@@ -19,7 +19,7 @@ export default function ValidatorResult({ editor, errors, hasSchema }): React.Re
 
   if (errors.length === 0) {
     return (
-      <Title headingLevel="h2">
+      <Title headingLevel="h3">
         <Icon status="success" size="headingXl">
           <CheckCircleIcon />
         </Icon>{" "}
@@ -35,7 +35,7 @@ export default function ValidatorResult({ editor, errors, hasSchema }): React.Re
 
   return (
     <>
-      <Title headingLevel="h2">
+      <Title headingLevel="h3">
         {" "}
         <Icon status="danger" size="headingXl">
           <TimesCircleIcon />

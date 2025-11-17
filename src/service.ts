@@ -9,36 +9,35 @@ const VERSION = "v1";
 
 // name of the cache
 const CACHE = `agama-editor-${VERSION}`;
-const ASSET_PATH = process.env.ASSET_PATH || (process.env.NODE_ENV === "development" ? "/" : "./");
 
 // resources downloaded to the offline cache
 const RESOURCES: string[] = [
   // // HTML files
-  ASSET_PATH,
+  "./",
   // JS files
-  ASSET_PATH + "editor.worker.js",
-  ASSET_PATH + "json.worker.js",
-  ASSET_PATH + "manifest.json",
-  ASSET_PATH + "app.js",
+  "./editor.worker.js",
+  "./json.worker.js",
+  "./manifest.json",
+  "./app.js",
   // icons
-  ASSET_PATH + "icon.svg",
-  ASSET_PATH + "icon-16.png",
-  ASSET_PATH + "icon-32.png",
-  ASSET_PATH + "icon-64.png",
-  ASSET_PATH + "icon-128.png",
-  ASSET_PATH + "icon-144.png",
-  ASSET_PATH + "icon-192.png",
-  ASSET_PATH + "icon-256.png",
-  ASSET_PATH + "icon-512.png",
+  "./icon.svg",
+  "./icon-16.png",
+  "./icon-32.png",
+  "./icon-64.png",
+  "./icon-128.png",
+  "./icon-144.png",
+  "./icon-192.png",
+  "./icon-256.png",
+  "./icon-512.png",
   // fonts
-  ASSET_PATH + "f6283f7ccaed1249d9eb.ttf",
-  ASSET_PATH + "pf-v6-pficon.woff2",
-  ASSET_PATH + "RedHatDisplayVF-Italic.woff2",
-  ASSET_PATH + "RedHatDisplayVF.woff2",
-  ASSET_PATH + "RedHatMonoVF-Italic.woff2",
-  ASSET_PATH + "RedHatMonoVF.woff2",
-  ASSET_PATH + "RedHatTextVF-Italic.woff2",
-  ASSET_PATH + "RedHatTextVF.woff2",
+  "./f6283f7ccaed1249d9eb.ttf",
+  "./pf-v6-pficon.woff2",
+  "./RedHatDisplayVF-Italic.woff2",
+  "./RedHatDisplayVF.woff2",
+  "./RedHatMonoVF-Italic.woff2",
+  "./RedHatMonoVF.woff2",
+  "./RedHatTextVF-Italic.woff2",
+  "./RedHatTextVF.woff2",
   // the remote schema files
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/profile.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/storage.schema.json",
@@ -49,11 +48,11 @@ const RESOURCES: string[] = [
 ];
 
 if (process.env.NODE_ENV === "development") {
-  RESOURCES.push(ASSET_PATH + "vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js.js");
+  RESOURCES.push("./vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js.js");
 }
 
 if (process.env.NODE_ENV === "production") {
-  RESOURCES.push(ASSET_PATH + "app.css");
+  RESOURCES.push("./app.css");
 }
 
 // download the resources to the offline cache

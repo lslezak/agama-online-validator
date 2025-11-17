@@ -3,17 +3,13 @@ import "@patternfly/react-core/dist/styles/base.css";
 import "@app/app.css";
 import {
   Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  CardTitle,
   Form,
   FormGroup,
-  Masthead,
-  MastheadContent,
-  Page,
-  PageSection,
-  Title,
-  Toolbar,
-  ToolbarContent,
-  ToolbarGroup,
-  ToolbarItem,
   Tooltip,
 } from "@patternfly/react-core";
 
@@ -49,6 +45,7 @@ const App: React.FunctionComponent = () => {
   );
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
   const [schema, setSchema] = useState<SchemaDefinition[]>([]);
+  const [showNotes, setShowNotes] = useState(!window.matchMedia("(display-mode: standalone)").matches);
 
   const themeChanged = useCallback(
     (newTheme) => {
@@ -74,10 +71,16 @@ const App: React.FunctionComponent = () => {
     };
     window.addEventListener("appinstalled", appInstalled);
 
+    const updateNotes = () => {
+      setShowNotes(!window.matchMedia("(display-mode: standalone)").matches);
+    };
+    window.matchMedia("(display-mode: standalone)").addEventListener("change", updateNotes);
+
     // cleanup callback to unregister the event listeners
     return () => {
       window.removeEventListener("beforeinstallprompt", beforeInstall);
       window.removeEventListener("appinstalled", appInstalled);
+      window.matchMedia("(display-mode: standalone)").removeEventListener("change", updateNotes);
     };
   });
 
@@ -85,57 +88,49 @@ const App: React.FunctionComponent = () => {
     if (installPrompt) installPrompt.prompt();
   };
 
-  const masthead = (
-    <Masthead>
-      <MastheadContent>
-        <Toolbar>
-          <ToolbarGroup align={{ default: "alignEnd" }}>
-            <ToolbarContent>
-              {installPrompt && (
-                <ToolbarItem>
-                  <Tooltip
-                    content={
-                      <div>
-                        Install the editor as a local application. The application icon is placed on the desktop and the
-                        JSON file extension is associated with the editor.
-                      </div>
-                    }
-                  >
-                    <Button variant="control" icon={<DownloadIcon />} onClick={installApp}>
-                      Install app
-                    </Button>
-                  </Tooltip>
-                </ToolbarItem>
-              )}
-              <ToolbarItem>
-                <ThemeSwitcher theme={theme} themeChanged={themeChanged} />
-              </ToolbarItem>
-            </ToolbarContent>
-          </ToolbarGroup>
-        </Toolbar>
-      </MastheadContent>
-    </Masthead>
-  );
-
   return (
-    <Page masthead={masthead}>
-      <PageSection>
-        <Title headingLevel="h1">Agama autoinstallation profile editor and validator</Title>
-      </PageSection>
-      <PageSection>
+    <Card>
+      <CardHeader
+        actions={{
+          hasNoOffset: true,
+          actions: [
+            installPrompt && (
+              <Tooltip
+                key="install-app-tooltip"
+                content={
+                  <div>
+                    Install the editor as a local application. The application icon is placed on the desktop and the
+                    JSON file extension is associated with the editor.
+                  </div>
+                }
+              >
+                <Button variant="control" icon={<DownloadIcon />} onClick={installApp} key="install-app-button">
+                  Install app
+                </Button>
+              </Tooltip>
+            ),
+            <ThemeSwitcher theme={theme} themeChanged={themeChanged} key="theme-switcher" />,
+          ],
+        }}
+      >
+        <CardTitle>Agama autoinstallation profile editor and validator</CardTitle>
+      </CardHeader>
+
+      <CardBody>
         <Form>
           <FormGroup label="Version of the profile">
             <ProfileSelector onSchemaLoad={onSchemaLoad} />
           </FormGroup>
         </Form>
-      </PageSection>
-      <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} />
-      <PageSection variant="secondary">
-        <PageSection>
-          <Notes webAppAvailable={!!installPrompt}/>
-        </PageSection>
-      </PageSection>
-    </Page>
+        <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} />
+      </CardBody>
+      {/* hide notes in installed app */}
+      {showNotes && (
+        <CardFooter>
+          <Notes webAppAvailable={!!installPrompt} />
+        </CardFooter>
+      )}
+    </Card>
   );
 };
 
