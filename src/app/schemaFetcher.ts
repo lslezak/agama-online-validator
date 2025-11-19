@@ -1,11 +1,10 @@
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Schema = any;
 
 export interface SchemaDefinition {
   uri: string;
   schema: Schema;
-  fileMatch?: string[] ;
+  fileMatch?: string[];
 }
 
 export async function fetchSchema(url: string): Promise<SchemaDefinition[]> {

@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ResizableBox } from "react-resizable";
-import "react-resizable/css/styles.css";
 import {
   Button,
   DropEvent,
@@ -8,7 +6,6 @@ import {
   FileUploadHelperText,
   HelperText,
   HelperTextItem,
-  PageSection,
   Split,
   SplitItem,
   Tooltip,
@@ -24,8 +21,6 @@ import ValidatorResult from "./ValidatorResult";
 import { handleLaunchQueue } from "./launchQueue";
 
 const defaultEditorContent = "{\n  \n}";
-// height of a single line
-const lineHeight = 19;
 
 export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
@@ -33,9 +28,6 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([] as string[]);
-  const [height, setHeight] = useState(30 * lineHeight);
-  const [heightNormal, setHeightNormal] = useState(height);
-  const [heightFull, setHeightFull] = useState(undefined as number | undefined);
   const [monacoEditor, setMonacoEditor] = useState(undefined as monaco.editor.IStandaloneCodeEditor | undefined);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const fsRef = useRef(null as HTMLDivElement | null);
@@ -47,25 +39,19 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     const onFullScreenChange = () => {
       if (!document.fullscreenElement) {
         setIsFullScreen(false);
-        setHeight(heightNormal);
       }
     };
 
     document.addEventListener("fullscreenchange", onFullScreenChange);
 
-    if (isFullScreen) {
-      if (heightFull) setHeight(heightFull);
-      else {
-        const defaultFullHeight = Math.floor((window.innerHeight * 0.85) / lineHeight) * lineHeight;
-        setHeightFull(defaultFullHeight);
-        setHeight(defaultFullHeight);
-      }
-    }
+    const layout = () => monacoEditor?.layout();
+    window.addEventListener("resize", layout);
 
     return () => {
       document.removeEventListener("fullscreenchange", onFullScreenChange);
+      window.removeEventListener("resize", layout);
     };
-  }, [heightNormal, isFullScreen, heightFull]);
+  }, [monacoEditor]);
 
   // uh, setting the same validation schema again causes strange validation error loop =:-o
   // set it only when it has been changed
@@ -130,10 +116,6 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   // avoid downloading the monaco editor parts from the CDN
   loader.config({ monaco });
 
-  const onResize = (_event, data) => {
-    setHeight(data.size.height);
-  };
-
   const save = async () => {
     if (fileHandle) {
       const blob = new Blob([value], { type: "application/json" });
@@ -167,99 +149,86 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   };
 
   return (
-    <>
-      <PageSection>
-        <div ref={fsRef} style={{ height: isFullScreen ? "100vh" : "auto" }}>
-          <FileUpload
-            id="profile-upload"
-            type="text"
-            value={value}
-            filename={filename}
-            multiple={false}
-            hideDefaultPreview={true}
-            filenamePlaceholder="Drag and drop a JSON file or upload one"
-            onFileInputChange={handleFileInputChange}
-            onDataChange={handleDataChange}
-            onTextChange={handleTextChange}
-            onReadStarted={handleFileReadStarted}
-            onReadFinished={handleFileReadFinished}
-            onClearClick={handleClear}
-            isLoading={isLoading}
-            allowEditingUploadedText={true}
-            validated={value.length === 0 ? undefined : errors.length === 0 ? "success" : "error"}
-            browseButtonText="Select file"
-            dropzoneProps={{
-              accept: {
-                "application/json": [".json"],
-              },
-            }}
-          >
-            <ResizableBox
-              axis="y"
-              minConstraints={[undefined, 10 * lineHeight]}
-              height={height}
-              onResize={onResize}
-              draggableOpts={{ grid: [lineHeight, lineHeight] }}
-            >
-              <CodeEditor
-                isLineNumbersVisible={true}
-                isReadOnly={false}
-                isMinimapVisible={false}
-                code={value}
-                isDarkTheme={isDarkTheme}
-                onChange={onChange}
-                language={Language.json}
-                onEditorDidMount={onEditorDidMount}
-                height={`${height - lineHeight}px`}
-              />
-            </ResizableBox>
-            {value === "" ? (
-              <FileUploadHelperText>
-                <HelperText>
-                  <HelperTextItem id="helper-text">Write or upload a JSON file</HelperTextItem>
-                </HelperText>
-              </FileUploadHelperText>
-            ) : (
-              <Split>
-                <SplitItem>
-                  <ValidatorResult errors={errors} hasSchema={schema.length > 0} editor={monacoEditor} />
-                </SplitItem>
-                <SplitItem isFilled />
-                <SplitItem>
-                  <Tooltip content={isFullScreen ? "Exit full screen" : "Switch to full screen mode"} position="bottom">
-                    <Button
-                      variant="plain"
-                      icon={<FullScreenIcon />}
-                      onClick={() => {
-                        if (isFullScreen) {
-                          document.exitFullscreen().then(() => {
-                            setHeightFull(height);
-                            setIsFullScreen(false);
-                          });
-                        } else if (fsRef?.current) {
-                          fsRef.current.requestFullscreen().then(() => {
-                            setHeightNormal(height);
-                            setIsFullScreen(true);
-                            if (monacoEditor) monacoEditor.focus();
-                          });
-                        }
-                      }}
-                    />
-                  </Tooltip>
-                  {fileHandle && (
-                    <Button variant="control" onClick={save}>
-                      Save
-                    </Button>
-                  )}{" "}
-                  <Button variant="control" onClick={saveAs}>
-                    Save as...
-                  </Button>
-                </SplitItem>
-              </Split>
-            )}
-          </FileUpload>
-        </div>
-      </PageSection>
-    </>
+    <div ref={fsRef}>
+      <FileUpload
+        id="profile-upload"
+        type="text"
+        value={value}
+        filename={filename}
+        multiple={false}
+        hideDefaultPreview={true}
+        filenamePlaceholder="Drag and drop a JSON file or upload one"
+        onFileInputChange={handleFileInputChange}
+        onDataChange={handleDataChange}
+        onTextChange={handleTextChange}
+        onReadStarted={handleFileReadStarted}
+        onReadFinished={handleFileReadFinished}
+        onClearClick={handleClear}
+        isLoading={isLoading}
+        allowEditingUploadedText={true}
+        validated={value.length === 0 ? undefined : errors.length === 0 ? "success" : "error"}
+        browseButtonText="Select file"
+        dropzoneProps={{
+          accept: {
+            "application/json": [".json"],
+          },
+        }}
+      >
+        <CodeEditor
+          isLineNumbersVisible={true}
+          isReadOnly={false}
+          isMinimapVisible={false}
+          code={value}
+          isDarkTheme={isDarkTheme}
+          onChange={onChange}
+          language={Language.json}
+          onEditorDidMount={onEditorDidMount}
+          height="sizeToFit"
+          isFullHeight={true}
+        />
+        {value === "" ? (
+          <FileUploadHelperText>
+            <HelperText>
+              <HelperTextItem id="helper-text">Write or upload a JSON file</HelperTextItem>
+            </HelperText>
+          </FileUploadHelperText>
+        ) : (
+          <Split>
+            <SplitItem>
+              <ValidatorResult errors={errors} hasSchema={schema.length > 0} editor={monacoEditor} />
+            </SplitItem>
+            <SplitItem isFilled />
+            <SplitItem>
+              <Tooltip content={isFullScreen ? "Exit full screen" : "Switch to full screen mode"} position="bottom">
+                <Button
+                  variant="plain"
+                  icon={<FullScreenIcon />}
+                  onClick={() => {
+                    if (isFullScreen) {
+                      document.exitFullscreen().then(() => {
+                        setIsFullScreen(false);
+                      });
+                    } else if (fsRef?.current) {
+                      fsRef.current.requestFullscreen().then(() => {
+                        setIsFullScreen(true);
+                        if (monacoEditor) monacoEditor.focus();
+                      });
+                    }
+                  }}
+                />
+              </Tooltip>
+              {fileHandle && (
+                <Button variant="control" onClick={save}>
+                  Save
+                </Button>
+              )}{" "}
+              <Button variant="control" onClick={saveAs}>
+                Save as...
+              </Button>
+            </SplitItem>
+          </Split>
+        )}
+      </FileUpload>
+    </div>
   );
 }

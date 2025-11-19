@@ -26,27 +26,30 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
     setIsOpen(!isOpen);
   };
 
-  const loadSchema = useCallback((selected: string) => {
-    const schema = ONLINE_SCHEMA.find((schema) => schema.label === selected);
-    if (schema) {
-      setIsLoading(true);
-      fetchSchema(schema.url)
-        .then((res) => {
-          if (onSchemaLoad) {
-            if (res && res[0]) res[0]["fileMatch"] = ["*"];
-            onSchemaLoad(res);
-          }
-          setIsError(false);
-        })
-        .catch(() => {
-          setIsError(true);
-          if (onSchemaLoad) {
-            onSchemaLoad([]);
-          }
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [onSchemaLoad]);
+  const loadSchema = useCallback(
+    (selected: string) => {
+      const schema = ONLINE_SCHEMA.find((schema) => schema.label === selected);
+      if (schema) {
+        setIsLoading(true);
+        fetchSchema(schema.url)
+          .then((res) => {
+            if (onSchemaLoad) {
+              if (res && res[0]) res[0]["fileMatch"] = ["*"];
+              onSchemaLoad(res);
+            }
+            setIsError(false);
+          })
+          .catch(() => {
+            setIsError(true);
+            if (onSchemaLoad) {
+              onSchemaLoad([]);
+            }
+          })
+          .finally(() => setIsLoading(false));
+      }
+    },
+    [onSchemaLoad],
+  );
 
   const onSelect = (_event: React.MouseEvent<Element, MouseEvent> | undefined, value: string | number | undefined) => {
     setSelected(value as string);

@@ -29,7 +29,7 @@ export default function ValidatorResult({ editor, errors, hasSchema }): React.Re
   }
 
   // Hack to recover from "No schema request service available" error
-  if (errors.length === 1 && errors[0].message.includes("No schema request service available") ) {
+  if (errors.length === 1 && errors[0].message.includes("No schema request service available")) {
     window.location.reload();
   }
 

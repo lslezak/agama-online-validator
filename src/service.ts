@@ -38,6 +38,9 @@ const RESOURCES: string[] = [
   "./RedHatMonoVF.woff2",
   "./RedHatTextVF-Italic.woff2",
   "./RedHatTextVF.woff2",
+];
+
+const REMOTE_RESOURCES: string[] = [
   // the remote schema files
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/profile.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/storage.schema.json",
@@ -63,7 +66,9 @@ self.addEventListener("install", (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
       console.log("Filling cache", RESOURCES);
-      cache.addAll(RESOURCES).catch((error) => console.error("Caching error ", error));
+      await cache.addAll(RESOURCES);
+      console.log("Filling cache", REMOTE_RESOURCES);
+      await cache.addAll(REMOTE_RESOURCES);
     })(),
   );
 });

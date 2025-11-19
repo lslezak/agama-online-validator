@@ -28,28 +28,19 @@ export default function Notes({ webAppAvailable }): React.ReactNode {
             <p>
               The validator can be also used offline, without any internet access. The page and the JSON validation
               schema files are cached in the browser. If network is not available these cached files are used to provide
-              the functionality. In some browsers it can be installed as a web application.
+              the functionality. In some browsers it can be installed as a web application. See more details about the
+              web applications in the{" "}
+              <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing">
+                Mozilla documentation
+              </a>
+              .
             </p>
 
             {webAppAvailable && (
               <p>
                 Press the &quot;Install app&quot; button in the top right corner to install it as a web application.
                 This adds creates a shortcut on the desktop and associates the <code>*.json</code> extension with the
-                web application. See more details about the web applications in the{" "}
-                <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing">
-                  Mozilla documentation
-                </a>
-                .
-              </p>
-            )}
-
-            {webAppAvailable && (
-              <p>
-                <em>
-                  Note: This is supported only in some browsers. Not all browsers support installing web applications
-                  (PWA). It should work in all Chrome based browsers. Firefox in Linux requires a{" "}
-                  <a href="https://addons.mozilla.org/en-US/firefox/addon/pwas-for-firefox/">PWA extension</a>.
-                </em>
+                web application.
               </p>
             )}
           </Content>

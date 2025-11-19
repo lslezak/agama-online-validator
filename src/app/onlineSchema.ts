@@ -1,4 +1,3 @@
-
 export interface SchemaLocation {
   label: string;
   description: string;

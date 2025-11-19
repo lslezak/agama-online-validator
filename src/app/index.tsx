@@ -89,7 +89,7 @@ const App: React.FunctionComponent = () => {
   };
 
   return (
-    <Card>
+    <Card style={{ height: "100%" }}>
       <CardHeader
         actions={{
           hasNoOffset: true,

@@ -11,7 +11,7 @@
     "build": "webpack --config webpack.prod.js",
     "start": "sirv dist --cors --single --port 8080",
     "start:dev": "webpack serve --color --progress --config webpack.dev.js",
-    "eslint": "eslint --ext .tsx,.js ./src/",
+    "eslint": "eslint --ext .tsx,.js,.ts ./src/",
     "lint": "npm run eslint",
     "format": "prettier --check --write ./src/**/*.{tsx,ts}",
     "type-check": "tsc --noEmit",
@@ -73,7 +73,6 @@
     "radashi": "^12.6.2",
     "react": "^18",
     "react-dom": "^18",
-    "react-resizable": "^3.0.5",
     "sirv-cli": "^3.0.0"
   }
 }
