@@ -82,7 +82,10 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
 
   const handleClear = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setFilename("");
+    setFileHandle(undefined);
     setValue(defaultEditorContent);
+    monacoEditor?.layout();
+    monacoEditor?.focus();
   };
 
   const handleFileReadStarted = (_event: DropEvent, _fileHandle: File) => {

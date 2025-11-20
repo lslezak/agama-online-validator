@@ -138,8 +138,18 @@ self.addEventListener("fetch", (event) => {
 
       console.log("Fetching", event.request.url);
 
-      // Else try the network.
-      return fetch(event.request);
+      try {
+        // else try the network and cache the result
+        const networkResponse = await fetch(event.request);
+        if (networkResponse.ok) {
+          const clonedResponse = networkResponse.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, clonedResponse));
+        }
+        return networkResponse;
+      } catch (error) {
+        console.log("Download failed: ", error);
+        return Response.error();
+      }
     })(),
   );
 });
