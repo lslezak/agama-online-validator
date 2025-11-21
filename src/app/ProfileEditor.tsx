@@ -24,6 +24,8 @@ const defaultEditorContent = "{\n  \n}";
 
 export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
+  // keep the original value for detecting changes, the document is usually short so we can keep a copy
+  const [originalValue, setOriginalValue] = useState(defaultEditorContent);
   const [filename, setFilename] = useState("");
   const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +35,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const fsRef = useRef(null as HTMLDivElement | null);
 
   useEffect(() => {
-    handleLaunchQueue(setValue, setFilename, setFileHandle);
+    handleLaunchQueue(setValue, setOriginalValue, setFilename, setFileHandle);
 
     // handle exiting full screen mode by pressing ESC
     const onFullScreenChange = () => {
@@ -47,11 +49,23 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     const layout = () => monacoEditor?.layout();
     window.addEventListener("resize", layout);
 
+    const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+      // confirm leaving the page after doing any change
+      if (value != originalValue) {
+        // the standard way
+        event.preventDefault();
+        // legacy support, e.g. Chrome/Edge < 119
+        event.returnValue = true;
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnloadHandler);
+
     return () => {
       document.removeEventListener("fullscreenchange", onFullScreenChange);
       window.removeEventListener("resize", layout);
+      window.removeEventListener("beforeunload", beforeUnloadHandler);
     };
-  }, [monacoEditor]);
+  }, [monacoEditor, originalValue, value]);
 
   // uh, setting the same validation schema again causes strange validation error loop =:-o
   // set it only when it has been changed
@@ -78,12 +92,14 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const handleDataChange = (_event: DropEvent, value: string) => {
     setFileHandle(undefined);
     setValue(value);
+    setOriginalValue(value);
   };
 
   const handleClear = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setFilename("");
     setFileHandle(undefined);
     setValue(defaultEditorContent);
+    setOriginalValue(defaultEditorContent);
     monacoEditor?.layout();
     monacoEditor?.focus();
   };
@@ -121,10 +137,15 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
 
   const save = async () => {
     if (fileHandle) {
-      const blob = new Blob([value], { type: "application/json" });
-      const writable = await fileHandle.createWritable();
-      await writable.write(blob);
-      await writable.close();
+      try {
+        const blob = new Blob([value], { type: "application/json" });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        setOriginalValue(value);
+      } catch (err) {
+        console.error("Cannot save the file: ", err);
+      }
     }
   };
 
@@ -146,6 +167,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
       await writable.close();
       setFileHandle(handle);
       setFilename(handle.name);
+      setOriginalValue(value);
     } catch (err) {
       console.error("Cannot save the file: ", err);
     }

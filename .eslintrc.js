@@ -7,8 +7,6 @@ module.exports = {
     jsx: true,
     js: true,
     useJSXTextNode: true,
-    project: "./tsconfig.json",
-    tsconfigRootDir: ".",
   },
   // we want to use the recommended rules provided from the typescript plugin
   extends: ["eslint:recommended", "plugin:react/recommended", "plugin:@typescript-eslint/recommended"],
