@@ -30,7 +30,7 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
     (selected: string) => {
       const schema = ONLINE_SCHEMA.find((schema) => schema.label === selected);
       if (schema) {
-        setIsLoading(true);
+        const timer = setTimeout(() => setIsLoading(true), 500);
         fetchSchema(schema.url)
           .then((res) => {
             if (onSchemaLoad) {
@@ -45,7 +45,10 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
               onSchemaLoad([]);
             }
           })
-          .finally(() => setIsLoading(false));
+          .finally(() => {
+            clearTimeout(timer);
+            setIsLoading(false);
+          });
       }
     },
     [onSchemaLoad],
