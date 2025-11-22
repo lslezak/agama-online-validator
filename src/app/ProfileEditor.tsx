@@ -208,6 +208,7 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
           onChange={onChange}
           language={Language.json}
           onEditorDidMount={onEditorDidMount}
+          options={{scrollBeyondLastLine: false}}
           height="sizeToFit"
           isFullHeight={true}
         />
