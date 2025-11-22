@@ -6,9 +6,12 @@ body,
 
 .pf-v6-c-code-editor__code {
   border-radius: 15px;
-  min-height: 190px;
 }
 
 .pf-v6-theme-dark .pf-v6-c-code-editor__code {
-   background-color: #1e1e1e;
+  background-color: var(--pf-t--global--background--color--primary--default);
+}
+
+:fullscreen::backdrop {
+  background-color: var(--pf-t--global--background--color--primary--default);
 }

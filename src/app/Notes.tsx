@@ -1,14 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
 import { Alert, AlertActionCloseButton, Content, ContentVariants, Icon } from "@patternfly/react-core";
 import BugIcon from "@patternfly/react-icons/dist/esm/icons/bug-icon";
 
-export default function Notes({ webAppAvailable }): React.ReactNode {
-  const [visible, setVisible] = useState(true);
-
-  if (!visible) return null;
-
+export default function Notes({ webAppAvailable, onClose }): React.ReactNode {
   return (
-    <Alert title="Notes" variant="info" actionClose={<AlertActionCloseButton onClose={() => setVisible(false)} />}>
+    <Alert
+      title="Notes"
+      variant="info"
+      actionClose={
+        <AlertActionCloseButton
+          onClose={() => {
+            if (onClose) onClose();
+          }}
+        />
+      }
+    >
       <Content component={ContentVariants.ul}>
         <Content component={ContentVariants.li}>
           This validator is just an experimental proof of concept, there might be bugs!{" "}

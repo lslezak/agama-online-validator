@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "@patternfly/react-core/dist/styles/base.css";
 import "@app/app.css";
 import {
   Button,
   Card,
   CardBody,
-  CardFooter,
   CardHeader,
   CardTitle,
   Form,
@@ -16,7 +15,6 @@ import {
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
 import ProfileEditor from "./ProfileEditor";
-import Notes from "./Notes";
 import ThemeSwitcher from "./ThemeSwitcher";
 import { THEME_TYPES, useTheme } from "./useTheme";
 import { ProfileSelector } from "./ProfileSelector";
@@ -45,7 +43,7 @@ const App: React.FunctionComponent = () => {
   );
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
   const [schema, setSchema] = useState<SchemaDefinition[]>([]);
-  const [showNotes, setShowNotes] = useState(!window.matchMedia("(display-mode: standalone)").matches);
+  const cardRef = useRef(null as HTMLDivElement | null);
 
   const themeChanged = useCallback(
     (newTheme) => {
@@ -71,16 +69,10 @@ const App: React.FunctionComponent = () => {
     };
     window.addEventListener("appinstalled", appInstalled);
 
-    const updateNotes = () => {
-      setShowNotes(!window.matchMedia("(display-mode: standalone)").matches);
-    };
-    window.matchMedia("(display-mode: standalone)").addEventListener("change", updateNotes);
-
     // cleanup callback to unregister the event listeners
     return () => {
       window.removeEventListener("beforeinstallprompt", beforeInstall);
       window.removeEventListener("appinstalled", appInstalled);
-      window.matchMedia("(display-mode: standalone)").removeEventListener("change", updateNotes);
     };
   });
 
@@ -89,7 +81,7 @@ const App: React.FunctionComponent = () => {
   };
 
   return (
-    <Card style={{ height: "100%" }}>
+    <Card ref={cardRef}>
       <CardHeader
         actions={{
           hasNoOffset: true,
@@ -122,14 +114,8 @@ const App: React.FunctionComponent = () => {
             <ProfileSelector onSchemaLoad={onSchemaLoad} />
           </FormGroup>
         </Form>
-        <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} />
+        <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} cardRef={cardRef} installPrompt={installPrompt}/>
       </CardBody>
-      {/* hide notes in installed app */}
-      {showNotes && (
-        <CardFooter>
-          <Notes webAppAvailable={!!installPrompt} />
-        </CardFooter>
-      )}
     </Card>
   );
 };

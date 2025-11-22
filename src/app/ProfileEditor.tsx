@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   DropEvent,
@@ -19,10 +19,12 @@ import FullScreenIcon from "@mui/icons-material/Fullscreen";
 
 import ValidatorResult from "./ValidatorResult";
 import { handleLaunchQueue } from "./launchQueue";
+import Notes from "./Notes";
 
 const defaultEditorContent = "{\n  \n}";
+const minHeight = 190;
 
-export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode {
+export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPrompt }): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
   // keep the original value for detecting changes, the document is usually short so we can keep a copy
   const [originalValue, setOriginalValue] = useState(defaultEditorContent);
@@ -32,22 +34,46 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const [errors, setErrors] = useState([] as string[]);
   const [monacoEditor, setMonacoEditor] = useState(undefined as monaco.editor.IStandaloneCodeEditor | undefined);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [height, setHeight] = useState(minHeight);
+  const [showNotes, setShowNotes] = useState(!window.matchMedia("(display-mode: standalone)").matches);
+
   const fsRef = useRef(null as HTMLDivElement | null);
+  const editorRef = useRef(null as HTMLDivElement | null);
+
+  const refreshSize = useCallback(
+    (editor: monaco.editor.IStandaloneCodeEditor | undefined) => {
+      if (!editor) return;
+
+            
+      const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
+      const freeSpace = isFullScreen
+        ? window.innerHeight - ((fsRef?.current?.firstChild as HTMLElement)?.clientHeight || 0)
+        : (document.getElementById("root")?.clientHeight || 0) - cardRef?.current?.clientHeight;
+      const editorHeight = editorRef?.current?.clientHeight || 0;
+      setHeight(Math.max(editorHeight + freeSpace - lineHeight, minHeight));
+    },
+    [cardRef, isFullScreen],
+  );
+
+  const closeNotes = function () {
+    setShowNotes(false);
+  };
 
   useEffect(() => {
     handleLaunchQueue(setValue, setOriginalValue, setFilename, setFileHandle);
 
     // handle exiting full screen mode by pressing ESC
     const onFullScreenChange = () => {
-      if (!document.fullscreenElement) {
-        setIsFullScreen(false);
-      }
+      setIsFullScreen(document.fullscreenElement !== null);
     };
 
     document.addEventListener("fullscreenchange", onFullScreenChange);
 
-    const layout = () => monacoEditor?.layout();
-    window.addEventListener("resize", layout);
+    const resize = () => {
+      refreshSize(monacoEditor);
+      monacoEditor?.layout();
+    };
+    window.addEventListener("resize", resize);
 
     const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
       // confirm leaving the page after doing any change
@@ -60,12 +86,20 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
     };
     window.addEventListener("beforeunload", beforeUnloadHandler);
 
+    const updateNotes = () => {
+      setShowNotes(!window.matchMedia("(display-mode: standalone)").matches);
+    };
+    window.matchMedia("(display-mode: standalone)").addEventListener("change", updateNotes);
+
+    setTimeout(() => refreshSize(monacoEditor), 500);
+
     return () => {
       document.removeEventListener("fullscreenchange", onFullScreenChange);
-      window.removeEventListener("resize", layout);
+      window.removeEventListener("resize", resize);
       window.removeEventListener("beforeunload", beforeUnloadHandler);
+      window.matchMedia("(display-mode: standalone)").removeEventListener("change", updateNotes);
     };
-  }, [monacoEditor, originalValue, value]);
+  }, [monacoEditor, originalValue, value, cardRef, refreshSize, showNotes]);
 
   // uh, setting the same validation schema again causes strange validation error loop =:-o
   // set it only when it has been changed
@@ -115,6 +149,8 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
   const onEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor, monaco) => {
     editor.layout();
     editor.focus();
+    refreshSize(editor);
+
     // set default indentation and tab size
     monaco.editor.getModels()[0].updateOptions({ tabSize: 2, indentSize: 2, insertSpaces: true });
 
@@ -199,18 +235,20 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
           },
         }}
       >
-        <CodeEditor
-          isLineNumbersVisible={true}
-          isReadOnly={false}
-          isMinimapVisible={false}
-          code={value}
-          isDarkTheme={isDarkTheme}
-          onChange={onChange}
-          language={Language.json}
-          onEditorDidMount={onEditorDidMount}
-          height="sizeToFit"
-          isFullHeight={true}
-        />
+        <div ref={editorRef}>
+          <CodeEditor
+            isLineNumbersVisible={true}
+            isReadOnly={false}
+            isMinimapVisible={false}
+            code={value}
+            isDarkTheme={isDarkTheme}
+            onChange={onChange}
+            language={Language.json}
+            onEditorDidMount={onEditorDidMount}
+            options={{ scrollBeyondLastLine: false }}
+            height={`${height}px`}
+          />
+        </div>
         {value === "" ? (
           <FileUploadHelperText>
             <HelperText>
@@ -254,6 +292,9 @@ export default function ProfileEditor({ isDarkTheme, schema }): React.ReactNode 
           </Split>
         )}
       </FileUpload>
+
+      {/* hide notes in installed app */}
+      {showNotes && !isFullScreen && <Notes webAppAvailable={!!installPrompt} onClose={closeNotes} />}
     </div>
   );
 }

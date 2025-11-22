@@ -12,7 +12,7 @@
     "start": "sirv dist --cors --single --port 8080",
     "start:dev": "webpack serve --color --progress --config webpack.dev.js",
     "eslint": "eslint --ext .tsx,.js,.ts ./src/",
-    "lint": "npm run eslint",
+    "eslint:fix": "eslint --fix --ext .tsx,.js,.ts ./src/",
     "format": "prettier --check --write ./src/**/*.{tsx,ts}",
     "type-check": "tsc --noEmit",
     "ci-checks": "npm run type-check && npm run lint",
