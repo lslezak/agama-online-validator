@@ -44,7 +44,6 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
     (editor: monaco.editor.IStandaloneCodeEditor | undefined) => {
       if (!editor) return;
 
-            
       const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
       const freeSpace = isFullScreen
         ? window.innerHeight - ((fsRef?.current?.firstChild as HTMLElement)?.clientHeight || 0)
@@ -294,7 +293,12 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
       </FileUpload>
 
       {/* hide notes in installed app */}
-      {showNotes && !isFullScreen && <Notes webAppAvailable={!!installPrompt} onClose={closeNotes} />}
+      {showNotes && !isFullScreen && (
+        <>
+          <br />
+          <Notes webAppAvailable={!!installPrompt} onClose={closeNotes} />
+        </>
+      )}
     </div>
   );
 }

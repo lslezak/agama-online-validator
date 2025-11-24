@@ -114,6 +114,7 @@ const App: React.FunctionComponent = () => {
             <ProfileSelector onSchemaLoad={onSchemaLoad} />
           </FormGroup>
         </Form>
+        <br/>
         <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} cardRef={cardRef} installPrompt={installPrompt}/>
       </CardBody>
     </Card>
