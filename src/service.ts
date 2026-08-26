@@ -5,7 +5,7 @@ export type Version = number;
 declare let self: ServiceWorkerGlobalScope;
 
 // version of the cache.
-const VERSION = "v1";
+const VERSION = "v2";
 
 // name of the cache
 const CACHE = `agama-editor-${VERSION}`;
@@ -45,9 +45,13 @@ const REMOTE_RESOURCES: string[] = [
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/profile.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/storage.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/iscsi.schema.json",
-  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/agama-lib/share/profile.schema.json",
-  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/agama-lib/share/storage.schema.json",
-  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/agama-lib/share/iscsi.schema.json",
+
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/profile.schema.json",
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/dasd.schema.json",
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/zfcp.schema.json",
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/software.schema.json",
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/storage.schema.json",
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/iscsi.schema.json"
 ];
 
 if (process.env.NODE_ENV === "development") {
