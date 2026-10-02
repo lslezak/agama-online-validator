@@ -1,11 +1,37 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button, Content, ContentVariants, Icon, Title } from "@patternfly/react-core";
+import * as monaco from "monaco-editor";
 
 import CheckCircleIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon";
 import TimesCircleIcon from "@patternfly/react-icons/dist/esm/icons/times-circle-icon";
 import WarningTriangleIcon from "@patternfly/react-icons/dist/esm/icons/warning-triangle-icon";
 
-export default function ValidatorResult({ editor, errors, hasSchema }): React.ReactNode {
+interface ValidatorResultProps {
+  editor?: monaco.editor.IStandaloneCodeEditor;
+  errors: monaco.editor.IMarker[];
+  hasSchema: boolean;
+}
+
+export default function ValidatorResult({ editor, errors, hasSchema }: ValidatorResultProps): React.ReactNode {
+  // Hack to recover from "No schema request service available" error
+  const missingSchemaService =
+    hasSchema && errors.length === 1 && errors[0].message.includes("No schema request service available");
+
+  useEffect(() => {
+    if (missingSchemaService) window.location.reload();
+  }, [missingSchemaService]);
+
+  const showError = (error: monaco.editor.IMarker) => {
+    if (!editor) return;
+
+    // move the cursor
+    editor.setPosition({ lineNumber: error.startLineNumber, column: error.startColumn });
+    // scroll if needed
+    editor.revealLineInCenter(error.startLineNumber);
+    // focus back to the editor
+    editor.focus();
+  };
+
   if (!hasSchema) {
     return (
       <Title headingLevel="h3">
@@ -28,37 +54,21 @@ export default function ValidatorResult({ editor, errors, hasSchema }): React.Re
     );
   }
 
-  // Hack to recover from "No schema request service available" error
-  if (errors.length === 1 && errors[0].message.includes("No schema request service available")) {
-    window.location.reload();
-  }
-
   return (
     <>
       <Title headingLevel="h3">
-        {" "}
         <Icon status="danger" size="headingXl">
           <TimesCircleIcon />
         </Icon>{" "}
         The profile is invalid, {errors.length === 1 ? "found error:" : `found ${errors.length} errors:`}
       </Title>
       <Content component={ContentVariants.ul}>
-        {errors?.map((e) => (
-          <Content component={ContentVariants.li} key={e.message}>
-            {e.message} (
-            <Button
-              variant="link"
-              isInline
-              onClick={() => {
-                // move the cursor
-                editor.setPosition({ lineNumber: e.startLineNumber, column: e.startColumn });
-                // scroll if needed
-                editor.revealLineInCenter(e.startLineNumber);
-                // focus back to the editor
-                editor.focus();
-              }}
-            >
-              line {e.startLineNumber}
+        {errors.map((error, index) => (
+          // the same message might be reported at several places
+          <Content component={ContentVariants.li} key={`${index}-${error.message}`}>
+            {error.message} (
+            <Button variant="link" isInline onClick={() => showError(error)}>
+              line {error.startLineNumber}
             </Button>
             )
           </Content>

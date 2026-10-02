@@ -37,7 +37,7 @@ module.exports = {
   ],
   settings: {
     react: {
-      version: "^16.11.0",
+      version: "detect",
     },
   },
   // includes the typescript specific rules found here: https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules

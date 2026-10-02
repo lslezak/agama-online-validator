@@ -2,19 +2,14 @@ import React from "react";
 import { Alert, AlertActionCloseButton, Content, ContentVariants, Icon } from "@patternfly/react-core";
 import BugIcon from "@patternfly/react-icons/dist/esm/icons/bug-icon";
 
-export default function Notes({ webAppAvailable, onClose }): React.ReactNode {
+interface NotesProps {
+  webAppAvailable: boolean;
+  onClose: () => void;
+}
+
+export default function Notes({ webAppAvailable, onClose }: NotesProps): React.ReactNode {
   return (
-    <Alert
-      title="Notes"
-      variant="info"
-      actionClose={
-        <AlertActionCloseButton
-          onClose={() => {
-            if (onClose) onClose();
-          }}
-        />
-      }
-    >
+    <Alert title="Notes" variant="info" actionClose={<AlertActionCloseButton onClose={onClose} />}>
       <Content component={ContentVariants.ul}>
         <Content component={ContentVariants.li}>
           This validator is just an experimental proof of concept, there might be bugs!{" "}
@@ -30,7 +25,7 @@ export default function Notes({ webAppAvailable, onClose }): React.ReactNode {
           The editor is quite powerful, it supports highlighting and code completion (Ctrl+Space), it uses the schema
           definition to offer the possible values. The attribute description is displayed on mouse hover. To navigate
           between the found problems press F8. More actions can be found in the context menu (right mouse click) or in
-          the command pallette (F1 key).
+          the command palette (F1 key).
         </Content>
         {"serviceWorker" in navigator && (
           <Content component={ContentVariants.li}>
@@ -48,8 +43,8 @@ export default function Notes({ webAppAvailable, onClose }): React.ReactNode {
             {webAppAvailable && (
               <p>
                 Press the &quot;Install app&quot; button in the top right corner to install it as a web application.
-                This adds creates a shortcut on the desktop and associates the <code>*.json</code> extension with the
-                web application.
+                This creates a shortcut on the desktop and associates the <code>*.json</code> extension with the web
+                application.
               </p>
             )}
           </Content>

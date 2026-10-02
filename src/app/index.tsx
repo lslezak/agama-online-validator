@@ -1,16 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "@patternfly/react-core/dist/styles/base.css";
 import "@app/app.css";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  CardTitle,
-  Form,
-  FormGroup,
-  Tooltip,
-} from "@patternfly/react-core";
+import { Button, Card, CardBody, CardHeader, CardTitle, Form, FormGroup, Tooltip } from "@patternfly/react-core";
 
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
@@ -38,23 +29,12 @@ declare global {
 
 const App: React.FunctionComponent = () => {
   const theme = useTheme(THEME_TYPES.COLOR);
-  const [isDarkTheme, setIsDarkTheme] = useState(
-    theme.mode === theme.modes.DARK || (theme.mode === theme.modes.SYSTEM && theme.resolvedTheme === theme.modes.DARK),
-  );
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
   const [schema, setSchema] = useState<SchemaDefinition[]>([]);
-  const cardRef = useRef(null as HTMLDivElement | null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  const themeChanged = useCallback(
-    (newTheme) => {
-      setIsDarkTheme(newTheme === theme.modes.DARK);
-    },
-    [theme.modes.DARK],
-  );
-
-  const onSchemaLoad = useCallback((loadedSchema: SchemaDefinition[]) => {
-    setSchema(loadedSchema);
-  }, []);
+  const isDarkTheme =
+    theme.mode === theme.modes.DARK || (theme.mode === theme.modes.SYSTEM && theme.resolvedTheme === theme.modes.DARK);
 
   // handle events related to PWA installation
   useEffect(() => {
@@ -74,11 +54,7 @@ const App: React.FunctionComponent = () => {
       window.removeEventListener("beforeinstallprompt", beforeInstall);
       window.removeEventListener("appinstalled", appInstalled);
     };
-  });
-
-  const installApp = function () {
-    if (installPrompt) installPrompt.prompt();
-  };
+  }, []);
 
   return (
     <Card ref={cardRef}>
@@ -96,12 +72,17 @@ const App: React.FunctionComponent = () => {
                   </div>
                 }
               >
-                <Button variant="control" icon={<DownloadIcon />} onClick={installApp} key="install-app-button">
+                <Button
+                  variant="control"
+                  icon={<DownloadIcon />}
+                  onClick={() => installPrompt.prompt()}
+                  key="install-app-button"
+                >
                   Install app
                 </Button>
               </Tooltip>
             ),
-            <ThemeSwitcher theme={theme} themeChanged={themeChanged} key="theme-switcher" />,
+            <ThemeSwitcher theme={theme} key="theme-switcher" />,
           ],
         }}
       >
@@ -111,11 +92,11 @@ const App: React.FunctionComponent = () => {
       <CardBody>
         <Form>
           <FormGroup label="Version of the profile">
-            <ProfileSelector onSchemaLoad={onSchemaLoad} />
+            <ProfileSelector onSchemaLoad={setSchema} />
           </FormGroup>
         </Form>
-        <br/>
-        <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} cardRef={cardRef} installPrompt={installPrompt}/>
+        <br />
+        <ProfileEditor isDarkTheme={isDarkTheme} schema={schema} cardRef={cardRef} installPrompt={installPrompt} />
       </CardBody>
     </Card>
   );

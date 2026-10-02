@@ -6,36 +6,23 @@ import LightMode from "@mui/icons-material/LightMode";
 import DarkMode from "@mui/icons-material/DarkMode";
 import SystemMode from "@mui/icons-material/Computer";
 
-export default function ThemeSwitcher({ theme, themeChanged }): React.ReactNode {
+export default function ThemeSwitcher({ theme }): React.ReactNode {
   const [isSelectionOpen, setIsSelectionOpen] = useState(false);
 
   const changeMode = (_event, newMode) => {
     theme.setMode(newMode);
-    themeChanged(newMode === theme.modes.SYSTEM ? theme.resolvedTheme : newMode);
     setIsSelectionOpen(false);
   };
 
-  const themeIcon = (currentMode, systemMode) => {
-    const mode = currentMode === theme.modes.SYSTEM ? systemMode : currentMode;
-
-    switch (mode) {
-      case theme.modes.LIGHT:
-        return LightMode;
-      case theme.modes.DARK:
-        return DarkMode;
-      default:
-        return LightMode;
-    }
-  };
-
-  const CurrentThemeIcon = themeIcon(theme.mode, theme.resolvedTheme);
+  const effectiveMode = theme.mode === theme.modes.SYSTEM ? theme.resolvedTheme : theme.mode;
+  const CurrentThemeIcon = effectiveMode === theme.modes.DARK ? DarkMode : LightMode;
 
   return (
     <Select
       isOpen={isSelectionOpen}
       selected={theme.mode}
       onSelect={changeMode}
-      onOpenChange={(isOpen) => setIsSelectionOpen(isOpen)}
+      onOpenChange={setIsSelectionOpen}
       toggle={(toggleRef) => (
         <MenuToggle
           ref={toggleRef}

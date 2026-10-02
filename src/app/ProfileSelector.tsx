@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   AlertActionLink,
@@ -11,44 +11,43 @@ import {
 import { SchemaDefinition, fetchSchema } from "./schemaFetcher";
 import { ONLINE_SCHEMA } from "./onlineSchema";
 
+const defaultSchema = ONLINE_SCHEMA[0].label;
+
 interface ProfileSelectorProps {
   onSchemaLoad(arg: SchemaDefinition[]): void;
 }
 
 export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({ onSchemaLoad }) => {
-  const defaultSchema = ONLINE_SCHEMA[0].label;
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string>(defaultSchema);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-
-  const onToggleClick = () => {
-    setIsOpen(!isOpen);
-  };
+  // ID of the latest request, used for ignoring outdated responses
+  const requestId = useRef(0);
 
   const loadSchema = useCallback(
-    (selected: string) => {
-      const schema = ONLINE_SCHEMA.find((schema) => schema.label === selected);
-      if (schema) {
-        const timer = setTimeout(() => setIsLoading(true), 500);
-        fetchSchema(schema.url)
-          .then((res) => {
-            if (onSchemaLoad) {
-              if (res && res[0]) res[0]["fileMatch"] = ["*"];
-              onSchemaLoad(res);
-            }
-            setIsError(false);
-          })
-          .catch(() => {
-            setIsError(true);
-            if (onSchemaLoad) {
-              onSchemaLoad([]);
-            }
-          })
-          .finally(() => {
-            clearTimeout(timer);
-            setIsLoading(false);
-          });
+    async (label: string) => {
+      const location = ONLINE_SCHEMA.find((schema) => schema.label === label);
+      if (!location) return;
+
+      const id = ++requestId.current;
+      // display the progress only for slow downloads to avoid flickering
+      const timer = setTimeout(() => setIsLoading(true), 500);
+
+      try {
+        const [main, ...nested] = await fetchSchema(location.url);
+        if (id !== requestId.current) return;
+        // validate any file with the main schema
+        onSchemaLoad([{ ...main, fileMatch: ["*"] }, ...nested]);
+        setIsError(false);
+      } catch (error) {
+        if (id !== requestId.current) return;
+        console.error("Cannot load the schema:", error);
+        onSchemaLoad([]);
+        setIsError(true);
+      } finally {
+        clearTimeout(timer);
+        if (id === requestId.current) setIsLoading(false);
       }
     },
     [onSchemaLoad],
@@ -57,12 +56,11 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
   const onSelect = (_event: React.MouseEvent<Element, MouseEvent> | undefined, value: string | number | undefined) => {
     setSelected(value as string);
     setIsOpen(false);
-
     loadSchema(value as string);
   };
 
   const toggle = (toggleRef: React.Ref<MenuToggleElement>) => (
-    <MenuToggle ref={toggleRef} onClick={onToggleClick} isExpanded={isOpen} isDisabled={isLoading}>
+    <MenuToggle ref={toggleRef} onClick={() => setIsOpen(!isOpen)} isExpanded={isOpen} isDisabled={isLoading}>
       {selected}
     </MenuToggle>
   );
@@ -70,7 +68,7 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
   // load the schema for the initial value
   useEffect(() => {
     loadSchema(defaultSchema);
-  }, [defaultSchema, loadSchema]);
+  }, [loadSchema]);
 
   return (
     <>
@@ -78,13 +76,13 @@ export const ProfileSelector: React.FunctionComponent<ProfileSelectorProps> = ({
         isOpen={isOpen}
         selected={selected}
         onSelect={onSelect}
-        onOpenChange={(isOpen) => setIsOpen(isOpen)}
+        onOpenChange={setIsOpen}
         toggle={toggle}
         shouldFocusToggleOnSelect
       >
         <SelectList>
-          {ONLINE_SCHEMA.map((schema, index) => (
-            <SelectOption key={index} value={schema.label} description={schema.description}>
+          {ONLINE_SCHEMA.map((schema) => (
+            <SelectOption key={schema.label} value={schema.label} description={schema.description}>
               {schema.label}
             </SelectOption>
           ))}

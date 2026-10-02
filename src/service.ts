@@ -12,7 +12,7 @@ const CACHE = `agama-editor-${VERSION}`;
 
 // resources downloaded to the offline cache
 const RESOURCES: string[] = [
-  // // HTML files
+  // HTML files
   "./",
   // JS files
   "./editor.worker.js",
@@ -51,7 +51,7 @@ const REMOTE_RESOURCES: string[] = [
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/zfcp.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/software.schema.json",
   "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/storage.schema.json",
-  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/iscsi.schema.json"
+  "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/iscsi.schema.json",
 ];
 
 if (process.env.NODE_ENV === "development") {
@@ -89,18 +89,25 @@ self.addEventListener("activate", (event) => {
       }
 
       const names = await caches.keys();
-      await Promise.all(
-        names.map((name) => {
-          if (name !== CACHE) {
-            return caches.delete(name);
-          }
-          return undefined;
-        }),
-      );
+      await Promise.all(names.filter((name) => name !== CACHE).map((name) => caches.delete(name)));
       await self.clients.claim();
     })(),
   );
 });
+
+// download the resource and store a successful response in the cache
+async function fetchAndCache(event: FetchEvent): Promise<Response> {
+  console.log("Fetching", event.request.url);
+  const response = await fetch(event.request);
+
+  if (response.ok) {
+    const clonedResponse = response.clone();
+    // update the cache in the background, do not delay the response
+    event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, clonedResponse)));
+  }
+
+  return response;
+}
 
 // intercept server requests
 self.addEventListener("fetch", (event) => {
@@ -109,13 +116,8 @@ self.addEventListener("fetch", (event) => {
       // for the schema requests try loading the latest schema from network
       if (event.request.url.endsWith(".schema.json")) {
         try {
-          console.log("Fetching", event.request.url);
-          const networkResponse = await fetch(event.request);
-          if (networkResponse.ok) {
-            const clonedResponse = networkResponse.clone();
-            caches.open(CACHE).then((cache) => cache.put(event.request, clonedResponse));
-            return networkResponse;
-          }
+          const networkResponse = await fetchAndCache(event);
+          if (networkResponse.ok) return networkResponse;
         } catch (error) {
           console.log("Download failed: ", error);
         }
@@ -140,16 +142,9 @@ self.addEventListener("fetch", (event) => {
         return response;
       }
 
-      console.log("Fetching", event.request.url);
-
+      // else try the network and cache the result
       try {
-        // else try the network and cache the result
-        const networkResponse = await fetch(event.request);
-        if (networkResponse.ok) {
-          const clonedResponse = networkResponse.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, clonedResponse));
-        }
-        return networkResponse;
+        return await fetchAndCache(event);
       } catch (error) {
         console.log("Download failed: ", error);
         return Response.error();

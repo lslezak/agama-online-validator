@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   DropEvent,
@@ -20,100 +20,143 @@ import FullScreenIcon from "@mui/icons-material/Fullscreen";
 import ValidatorResult from "./ValidatorResult";
 import { handleLaunchQueue } from "./launchQueue";
 import Notes from "./Notes";
+import { SchemaDefinition } from "./schemaFetcher";
+
+// avoid downloading the monaco editor parts from the CDN
+loader.config({ monaco });
 
 const defaultEditorContent = "{\n  \n}";
 const minHeight = 190;
+const standaloneQuery = "(display-mode: standalone)";
 
-export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPrompt }): React.ReactNode {
+// the notes are hidden in the installed app
+const isStandalone = () => window.matchMedia(standaloneQuery).matches;
+
+async function writeFile(handle: FileSystemFileHandle, content: string) {
+  const writable = await handle.createWritable();
+  await writable.write(new Blob([content], { type: "application/json" }));
+  await writable.close();
+}
+
+interface ProfileEditorProps {
+  isDarkTheme: boolean;
+  schema: SchemaDefinition[];
+  cardRef: RefObject<HTMLDivElement | null>;
+  installPrompt?: Event;
+}
+
+export default function ProfileEditor({
+  isDarkTheme,
+  schema,
+  cardRef,
+  installPrompt,
+}: ProfileEditorProps): React.ReactNode {
   const [value, setValue] = useState(defaultEditorContent);
   // keep the original value for detecting changes, the document is usually short so we can keep a copy
   const [originalValue, setOriginalValue] = useState(defaultEditorContent);
   const [filename, setFilename] = useState("");
-  const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | undefined>(undefined);
+  const [fileHandle, setFileHandle] = useState<FileSystemFileHandle>();
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState([] as string[]);
-  const [monacoEditor, setMonacoEditor] = useState(undefined as monaco.editor.IStandaloneCodeEditor | undefined);
+  const [errors, setErrors] = useState<monaco.editor.IMarker[]>([]);
+  const [monacoEditor, setMonacoEditor] = useState<monaco.editor.IStandaloneCodeEditor>();
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [height, setHeight] = useState(minHeight);
-  const [showNotes, setShowNotes] = useState(!window.matchMedia("(display-mode: standalone)").matches);
+  const [showNotes, setShowNotes] = useState(!isStandalone());
 
-  const fsRef = useRef(null as HTMLDivElement | null);
-  const editorRef = useRef(null as HTMLDivElement | null);
+  const fsRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
+  const isModified = value !== originalValue;
+
+  // load a new document into the editor
+  const loadContent = (content: string, handle?: FileSystemFileHandle) => {
+    setFileHandle(handle);
+    setValue(content);
+    setOriginalValue(content);
+  };
+
+  // resize the editor to fill the free space in the window
   const refreshSize = useCallback(
     (editor: monaco.editor.IStandaloneCodeEditor | undefined) => {
       if (!editor) return;
 
       const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
       const freeSpace = isFullScreen
-        ? window.innerHeight - ((fsRef?.current?.firstChild as HTMLElement)?.clientHeight || 0)
-        : (document.getElementById("root")?.clientHeight || 0) - cardRef?.current?.clientHeight;
-      const editorHeight = editorRef?.current?.clientHeight || 0;
+        ? window.innerHeight - ((fsRef.current?.firstChild as HTMLElement)?.clientHeight || 0)
+        : (document.getElementById("root")?.clientHeight || 0) - (cardRef.current?.clientHeight || 0);
+      const editorHeight = editorRef.current?.clientHeight || 0;
       setHeight(Math.max(editorHeight + freeSpace - lineHeight, minHeight));
     },
     [cardRef, isFullScreen],
   );
 
-  const closeNotes = function () {
-    setShowNotes(false);
-  };
-
+  // register the global event handlers
   useEffect(() => {
-    handleLaunchQueue(setValue, setOriginalValue, setFilename, setFileHandle);
+    handleLaunchQueue((handle, name, content) => {
+      setFileHandle(handle);
+      setFilename(name);
+      setValue(content);
+      setOriginalValue(content);
+    });
 
     // handle exiting full screen mode by pressing ESC
-    const onFullScreenChange = () => {
-      setIsFullScreen(document.fullscreenElement !== null);
-    };
-
+    const onFullScreenChange = () => setIsFullScreen(document.fullscreenElement !== null);
     document.addEventListener("fullscreenchange", onFullScreenChange);
 
+    const standaloneMedia = window.matchMedia(standaloneQuery);
+    const updateNotes = () => setShowNotes(!standaloneMedia.matches);
+    standaloneMedia.addEventListener("change", updateNotes);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullScreenChange);
+      standaloneMedia.removeEventListener("change", updateNotes);
+    };
+  }, []);
+
+  // confirm leaving the page after doing any change
+  useEffect(() => {
+    if (!isModified) return;
+
+    const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+      // the standard way
+      event.preventDefault();
+      // legacy support, e.g. Chrome/Edge < 119
+      event.returnValue = true;
+    };
+    window.addEventListener("beforeunload", beforeUnloadHandler);
+    return () => window.removeEventListener("beforeunload", beforeUnloadHandler);
+  }, [isModified]);
+
+  useEffect(() => {
     const resize = () => {
       refreshSize(monacoEditor);
       monacoEditor?.layout();
     };
     window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, [monacoEditor, refreshSize]);
 
-    const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-      // confirm leaving the page after doing any change
-      if (value != originalValue) {
-        // the standard way
-        event.preventDefault();
-        // legacy support, e.g. Chrome/Edge < 119
-        event.returnValue = true;
-      }
-    };
-    window.addEventListener("beforeunload", beforeUnloadHandler);
+  // the page layout might change (displayed errors, notes, full screen...), adjust the editor size
+  useEffect(() => {
+    const timer = setTimeout(() => refreshSize(monacoEditor), 500);
+    return () => clearTimeout(timer);
+  }, [monacoEditor, refreshSize, showNotes, value, errors]);
 
-    const updateNotes = () => {
-      setShowNotes(!window.matchMedia("(display-mode: standalone)").matches);
-    };
-    window.matchMedia("(display-mode: standalone)").addEventListener("change", updateNotes);
+  useEffect(() => {
+    // uh, setting the same validation schema again causes strange validation error loop =:-o
+    // set it only when it has been changed
+    if (radashi.isEqual(monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas, schema)) return;
 
-    setTimeout(() => refreshSize(monacoEditor), 500);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", onFullScreenChange);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("beforeunload", beforeUnloadHandler);
-      window.matchMedia("(display-mode: standalone)").removeEventListener("change", updateNotes);
-    };
-  }, [monacoEditor, originalValue, value, cardRef, refreshSize, showNotes]);
-
-  // uh, setting the same validation schema again causes strange validation error loop =:-o
-  // set it only when it has been changed
-  if (!radashi.isEqual(monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas, schema)) {
-    console.log("Setting editor schema", schema[0] && schema[0].uri);
-
+    console.log("Setting editor schema", schema[0]?.uri);
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
       ...monaco.languages.json.jsonDefaults.diagnosticsOptions,
       validate: true,
       enableSchemaRequest: false,
       schemas: schema,
     });
-  }
+  }, [schema]);
 
-  const handleFileInputChange = (_, file: File) => {
+  const handleFileInputChange = (_event: DropEvent, file: File) => {
     setFileHandle(undefined);
     setFilename(file.name);
   };
@@ -123,64 +166,52 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
   };
 
   const handleDataChange = (_event: DropEvent, value: string) => {
-    setFileHandle(undefined);
-    setValue(value);
-    setOriginalValue(value);
+    loadContent(value);
   };
 
   const handleClear = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setFilename("");
-    setFileHandle(undefined);
-    setValue(defaultEditorContent);
-    setOriginalValue(defaultEditorContent);
+    loadContent(defaultEditorContent);
     monacoEditor?.layout();
     monacoEditor?.focus();
   };
 
-  const handleFileReadStarted = (_event: DropEvent, _fileHandle: File) => {
-    setIsLoading(true);
-  };
-
-  const handleFileReadFinished = (_event: DropEvent, _fileHandle: File) => {
-    setIsLoading(false);
-  };
-
-  const onEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor, monaco) => {
+  const onEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editor.layout();
     editor.focus();
     refreshSize(editor);
 
     // set default indentation and tab size
-    monaco.editor.getModels()[0].updateOptions({ tabSize: 2, indentSize: 2, insertSpaces: true });
+    editor.getModel()?.updateOptions({ tabSize: 2, indentSize: 2, insertSpaces: true });
 
     // this allows getting exact location of the validation errors
     editor.onDidChangeModelDecorations(() => {
       const model = editor.getModel();
-      const modelMarkers = monaco.editor.getModelMarkers(model);
-      setErrors(modelMarkers);
+      setErrors(model ? monaco.editor.getModelMarkers({ resource: model.uri }) : []);
     });
 
     setMonacoEditor(editor);
   };
 
-  const onChange = (val: string) => {
-    setValue(val);
+  const toggleFullScreen = async () => {
+    if (isFullScreen) {
+      await document.exitFullscreen();
+      setIsFullScreen(false);
+    } else if (fsRef.current) {
+      await fsRef.current.requestFullscreen();
+      setIsFullScreen(true);
+      monacoEditor?.focus();
+    }
   };
 
-  // avoid downloading the monaco editor parts from the CDN
-  loader.config({ monaco });
-
   const save = async () => {
-    if (fileHandle) {
-      try {
-        const blob = new Blob([value], { type: "application/json" });
-        const writable = await fileHandle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        setOriginalValue(value);
-      } catch (err) {
-        console.error("Cannot save the file: ", err);
-      }
+    if (!fileHandle) return;
+
+    try {
+      await writeFile(fileHandle, value);
+      setOriginalValue(value);
+    } catch (err) {
+      console.error("Cannot save the file: ", err);
     }
   };
 
@@ -196,10 +227,7 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
           },
         ],
       });
-      const blob = new Blob([value], { type: "application/json" });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
+      await writeFile(handle, value);
       setFileHandle(handle);
       setFilename(handle.name);
       setOriginalValue(value);
@@ -221,8 +249,8 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
         onFileInputChange={handleFileInputChange}
         onDataChange={handleDataChange}
         onTextChange={handleTextChange}
-        onReadStarted={handleFileReadStarted}
-        onReadFinished={handleFileReadFinished}
+        onReadStarted={() => setIsLoading(true)}
+        onReadFinished={() => setIsLoading(false)}
         onClearClick={handleClear}
         isLoading={isLoading}
         allowEditingUploadedText={true}
@@ -241,7 +269,7 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
             isMinimapVisible={false}
             code={value}
             isDarkTheme={isDarkTheme}
-            onChange={onChange}
+            onChange={setValue}
             language={Language.json}
             onEditorDidMount={onEditorDidMount}
             options={{ scrollBeyondLastLine: false }}
@@ -262,22 +290,7 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
             <SplitItem isFilled />
             <SplitItem>
               <Tooltip content={isFullScreen ? "Exit full screen" : "Switch to full screen mode"} position="bottom">
-                <Button
-                  variant="plain"
-                  icon={<FullScreenIcon />}
-                  onClick={() => {
-                    if (isFullScreen) {
-                      document.exitFullscreen().then(() => {
-                        setIsFullScreen(false);
-                      });
-                    } else if (fsRef?.current) {
-                      fsRef.current.requestFullscreen().then(() => {
-                        setIsFullScreen(true);
-                        if (monacoEditor) monacoEditor.focus();
-                      });
-                    }
-                  }}
-                />
+                <Button variant="plain" icon={<FullScreenIcon />} onClick={toggleFullScreen} />
               </Tooltip>
               {fileHandle && (
                 <Button variant="control" onClick={save}>
@@ -296,7 +309,7 @@ export default function ProfileEditor({ isDarkTheme, schema, cardRef, installPro
       {showNotes && !isFullScreen && (
         <>
           <br />
-          <Notes webAppAvailable={!!installPrompt} onClose={closeNotes} />
+          <Notes webAppAvailable={!!installPrompt} onClose={() => setShowNotes(false)} />
         </>
       )}
     </div>

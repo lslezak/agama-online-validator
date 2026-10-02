@@ -17,7 +17,7 @@ and the JSON validation schema files are cached in the browser. If network is
 not available these cached files are used to provide the functionality.
 
 Press the "Install app" button in the top right corner to install it as a web
-application. This adds creates a shortcut on the desktop and associates the
+application. This creates a shortcut on the desktop and associates the
 `*.json` extension with the web application. See more details about the web
 applications in the [Mozilla
 documentation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing).
