@@ -6,13 +6,18 @@ export interface SchemaLocation {
 
 export const ONLINE_SCHEMA: SchemaLocation[] = [
   {
-    label: "SUSE SLE-16 / openSUSE Leap 16.0",
+    label: "SUSE SLE-16.1 / openSUSE Leap 16.1",
     description: "The latest stable version",
+    url: "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16.1/rust/share/profile.schema.json",
+  },
+  {
+    label: "SUSE SLE-16 / openSUSE Leap 16.0",
+    description: "The older maintained version",
     url: "https://raw.githubusercontent.com/agama-project/agama/refs/heads/SLE-16/rust/agama-lib/share/profile.schema.json",
   },
   {
     label: "Latest development version (unstable)",
     description: "The latest version from Git or OBS development project",
-    url: "https://raw.githubusercontent.com/agama-project/agama/refs/heads/master/rust/share/profile.schema.json",
+    url: "https://raw.githubusercontent.com/agama-project/agama-openapi/refs/heads/main/nightly/schemas/config.schema.json",
   },
 ];
